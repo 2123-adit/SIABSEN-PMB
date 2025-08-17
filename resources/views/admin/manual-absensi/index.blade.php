@@ -42,7 +42,7 @@
                                 <option value="">Semua User</option>
                                 @foreach($users as $user)
                                     <option value="{{ $user->id }}" {{ request('user_id') == $user->id ? 'selected' : '' }}>
-                                        {{ $user->name }} ({{ $user->username }})
+                                        {{ $user->name }} ({{ $user->user_id }})
                                     </option>
                                 @endforeach
                             </select>

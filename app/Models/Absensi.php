@@ -102,6 +102,31 @@ class Absensi extends Model
     {
         return $query->where('status_kehadiran', $status);
     }
+    
+    // QUERY OPTIMIZATION: Scope dengan eager loading
+    public function scopeWithUser($query)
+    {
+        return $query->with('user');
+    }
+    
+    public function scopeWithUserAndJabatan($query)
+    {
+        return $query->with('user.jabatan');
+    }
+    
+    public function scopeToday($query)
+    {
+        return $query->whereDate('tanggal', today('Asia/Jakarta'));
+    }
+    
+    public function scopeThisMonth($query, $month = null, $year = null)
+    {
+        $month = $month ?? now('Asia/Jakarta')->month;
+        $year = $year ?? now('Asia/Jakarta')->year;
+        
+        return $query->whereMonth('tanggal', $month)
+                    ->whereYear('tanggal', $year);
+    }
 
     public function getGoogleMapsLinkMasukAttribute()
     {

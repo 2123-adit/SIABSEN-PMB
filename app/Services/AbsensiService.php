@@ -15,6 +15,11 @@ class AbsensiService
 {
     public function absenMasuk(User $user, $latitude, $longitude, UploadedFile $foto)
     {
+        // Eager load jabatan relation if not already loaded
+        if (!$user->relationLoaded('jabatan')) {
+            $user->load('jabatan');
+        }
+        
         // Set timezone ke Asia/Jakarta (sama dengan Medan)
         $today = Carbon::today('Asia/Jakarta');
         $now = Carbon::now('Asia/Jakarta');
@@ -22,6 +27,12 @@ class AbsensiService
         // Validasi hari libur
         if (Holiday::isHoliday($today)) {
             throw new \Exception('Tidak dapat absen pada hari libur');
+        }
+
+        // Validasi jadwal kerja berdasarkan jabatan
+        if (!$user->jabatan->isWorkingDay($today)) {
+            $dayName = $today->locale('id')->dayName;
+            throw new \Exception("Tidak dapat absen. Hari {$dayName} bukan jadwal kerja untuk jabatan Anda");
         }
 
         // Cek apakah sudah absen masuk hari ini
@@ -35,10 +46,32 @@ class AbsensiService
 
         // Validasi Geofencing
         $geofenceResult = $this->validateGeofencing($latitude, $longitude);
-        if (!$geofenceResult['is_within']) {
+        
+        // Debug bypass untuk development
+        $debugBypass = config('app.debug') && (env('GEOFENCE_DEBUG_BYPASS', false) || env('APP_ENV') === 'local');
+        
+        \Log::info('=== ABSEN MASUK: GEOFENCE VALIDATION ===', [
+            'user_id' => $user->id,
+            'is_within' => $geofenceResult['is_within'],
+            'distance' => $geofenceResult['distance'],
+            'radius' => $geofenceResult['radius'],
+            'debug_bypass_enabled' => $debugBypass,
+            'app_debug' => config('app.debug'),
+            'geofence_debug_bypass_env' => env('GEOFENCE_DEBUG_BYPASS'),
+        ]);
+        
+        if (!$geofenceResult['is_within'] && !$debugBypass) {
             throw new \Exception(
                 "Anda berada di luar area kantor. Jarak: {$geofenceResult['distance']}m dari {$geofenceResult['location_name']} (Max: {$geofenceResult['radius']}m)"
             );
+        }
+        
+        if ($debugBypass && !$geofenceResult['is_within']) {
+            \Log::info('🔓 DEBUG: Geofence validation bypassed for absen masuk', [
+                'user_id' => $user->id,
+                'distance' => $geofenceResult['distance'],
+                'radius' => $geofenceResult['radius'],
+            ]);
         }
 
         // Upload foto
@@ -92,7 +125,7 @@ class AbsensiService
             'status_masuk' => $statusMasuk,
             'menit_terlambat' => $menitTerlambat,
             'foto_url' => asset('storage/' . $fotoPath),
-            'google_maps' => "https://www.google.com/maps?q={$latitude},{$longitude}",
+            // 'google_maps' => "https://www.google.com/maps?q={$latitude},{$longitude}", // REMOVED: Privacy concern
             'geofence_status' => $geofenceResult['is_within'] ? 'Dalam Area' : 'Luar Area',
             'distance_from_office' => $geofenceResult['distance'],
             'server_time' => $now->format('Y-m-d H:i:s T'),
@@ -111,6 +144,12 @@ class AbsensiService
             throw new \Exception('Tidak dapat absen pada hari libur');
         }
 
+        // Validasi jadwal kerja berdasarkan jabatan
+        if (!$user->jabatan->isWorkingDay($today)) {
+            $dayName = $today->locale('id')->dayName;
+            throw new \Exception("Tidak dapat absen. Hari {$dayName} bukan jadwal kerja untuk jabatan Anda");
+        }
+
         // Cek absensi hari ini
         $absensiHariIni = Absensi::where('user_id', $user->id)
             ->whereDate('tanggal', $today)
@@ -126,10 +165,30 @@ class AbsensiService
 
         // Validasi Geofencing
         $geofenceResult = $this->validateGeofencing($latitude, $longitude);
-        if (!$geofenceResult['is_within']) {
+        
+        // Debug bypass untuk development
+        $debugBypass = config('app.debug') && (env('GEOFENCE_DEBUG_BYPASS', false) || env('APP_ENV') === 'local');
+        
+        \Log::info('=== ABSEN PULANG: GEOFENCE VALIDATION ===', [
+            'user_id' => $user->id,
+            'is_within' => $geofenceResult['is_within'],
+            'distance' => $geofenceResult['distance'],
+            'radius' => $geofenceResult['radius'],
+            'debug_bypass_enabled' => $debugBypass,
+        ]);
+        
+        if (!$geofenceResult['is_within'] && !$debugBypass) {
             throw new \Exception(
                 "Anda berada di luar area kantor. Jarak: {$geofenceResult['distance']}m dari {$geofenceResult['location_name']} (Max: {$geofenceResult['radius']}m)"
             );
+        }
+        
+        if ($debugBypass && !$geofenceResult['is_within']) {
+            \Log::info('🔓 DEBUG: Geofence validation bypassed for absen pulang', [
+                'user_id' => $user->id,
+                'distance' => $geofenceResult['distance'],
+                'radius' => $geofenceResult['radius'],
+            ]);
         }
 
         // Upload foto
@@ -160,7 +219,7 @@ class AbsensiService
             'jam_pulang' => $jamPulang->format('H:i:s'),
             'status_pulang' => $statusPulang,
             'foto_url' => asset('storage/' . $fotoPath),
-            'google_maps' => "https://www.google.com/maps?q={$latitude},{$longitude}",
+            // 'google_maps' => "https://www.google.com/maps?q={$latitude},{$longitude}", // REMOVED: Privacy concern
             'total_jam_kerja' => $absensiHariIni->total_jam_kerja,
             'geofence_status' => $geofenceResult['is_within'] ? 'Dalam Area' : 'Luar Area',
             'distance_from_office' => $geofenceResult['distance'],
@@ -169,7 +228,7 @@ class AbsensiService
         ];
     }
 
-    private function validateGeofencing($userLat, $userLng): array
+    public function validateGeofencing($userLat, $userLng): array
     {
         $geofenceSetting = GeofencingSetting::getActiveSetting();
         

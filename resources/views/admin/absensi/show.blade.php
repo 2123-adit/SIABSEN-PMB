@@ -17,8 +17,8 @@
                         <td>{{ $absensi->user->name }}</td>
                     </tr>
                     <tr>
-                        <td><strong>Username:</strong></td>
-                        <td>{{ $absensi->user->username }}</td>
+                        <td><strong>User ID:</strong></td>
+                        <td>{{ $absensi->user->user_id }}</td>
                     </tr>
                     <tr>
                         <td><strong>Jabatan:</strong></td>

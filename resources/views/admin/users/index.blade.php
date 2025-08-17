@@ -42,7 +42,7 @@
                         </div>
                         <div class="col-md-5">
                             <label class="form-label">Cari</label>
-                            <input type="text" name="search" class="form-control" placeholder="Nama, NIK, atau Email" value="{{ request('search') }}">
+                            <input type="text" name="search" class="form-control" placeholder="Nama atau User ID" value="{{ request('search') }}">
                         </div>
                         <div class="col-md-2">
                             <label class="form-label">&nbsp;</label>
@@ -61,7 +61,7 @@
                         <thead class="table-light">
                             <tr>
                                 <th>#</th>
-                                <th>Username</th>
+                                <th>User ID</th>
                                 <th>Nama</th>
                                 <th>Jabatan</th>
                                 <th>Status</th>
@@ -71,8 +71,8 @@
                         <tbody>
                             @forelse($users as $index => $user)
                                 <tr>
-                                    <td>{{ $users->firstItem() + $index }}</td>
-                                    <td>{{ $user->username }}</td>
+                                    <td>{{ ($users->currentPage() - 1) * $users->perPage() + $loop->iteration }}</td>
+                                    <td>{{ $user->user_id }}</td>
                                     <td>{{ $user->name }}</td>
                                     <td>{{ $user->jabatan->nama_jabatan }}</td>
                                     <td>
@@ -112,8 +112,27 @@
                     </table>
                 </div>
 
-                <!-- Pagination -->
-                {{ $users->links() }}
+                <!-- Pagination dengan styling yang lebih rapi -->
+                @if($users->hasPages())
+                    <div class="d-flex justify-content-center mt-4">
+                        <nav aria-label="User pagination">
+                            {{ $users->appends(request()->query())->links('pagination::bootstrap-4') }}
+                        </nav>
+                    </div>
+                @endif
+                
+                <!-- Info jumlah data -->
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <small class="text-muted">
+                        Menampilkan {{ $users->firstItem() ?? 0 }} - {{ $users->lastItem() ?? 0 }} 
+                        dari {{ $users->total() }} total user
+                    </small>
+                    @if($users->hasPages())
+                        <small class="text-muted">
+                            Halaman {{ $users->currentPage() }} dari {{ $users->lastPage() }}
+                        </small>
+                    @endif
+                </div>
             </div>
         </div>
     </div>

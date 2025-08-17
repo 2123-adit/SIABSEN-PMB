@@ -120,8 +120,27 @@
                     </table>
                 </div>
 
-                <!-- Pagination -->
-                {{ $holidays->links() }}
+                <!-- Pagination dengan styling yang lebih rapi -->
+                @if($holidays->hasPages())
+                    <div class="d-flex justify-content-center mt-4">
+                        <nav aria-label="Holiday pagination">
+                            {{ $holidays->appends(request()->query())->links('pagination::bootstrap-4') }}
+                        </nav>
+                    </div>
+                @endif
+                
+                <!-- Info jumlah data -->
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <small class="text-muted">
+                        Menampilkan {{ $holidays->firstItem() ?? 0 }} - {{ $holidays->lastItem() ?? 0 }} 
+                        dari {{ $holidays->total() }} total hari libur
+                    </small>
+                    @if($holidays->hasPages())
+                        <small class="text-muted">
+                            Halaman {{ $holidays->currentPage() }} dari {{ $holidays->lastPage() }}
+                        </small>
+                    @endif
+                </div>
             </div>
         </div>
     </div>

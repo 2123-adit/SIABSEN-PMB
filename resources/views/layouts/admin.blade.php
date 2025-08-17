@@ -175,8 +175,12 @@
                         <div class="btn-group me-2">
                             <span class="navbar-text">
                                 <i class="bi bi-person-circle me-1"></i>
-                                {{ auth()->user()->name }}
-                                <span class="badge bg-primary ms-1">{{ auth()->user()->jabatan->nama_jabatan ?? 'Admin' }}</span>
+                                <a href="#" onclick="confirmLogout(event)" class="text-decoration-none text-dark fw-bold" style="cursor: pointer;">
+                                    {{ auth()->user()->name }}
+                                </a>
+                                @if(auth()->user()->role !== 'admin')
+                                    <span class="badge bg-primary ms-1">{{ auth()->user()->jabatan->nama_jabatan ?? 'User' }}</span>
+                                @endif
                             </span>
                         </div>
                     </div>

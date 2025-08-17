@@ -162,7 +162,7 @@
                                                                 <label class="form-check-label w-100" for="user_{{ $user->id }}">
                                                                     <div class="fw-bold">{{ $user->name }}</div>
                                                                     <small class="text-muted">
-                                                                        {{ $user->username }}<br>
+                                                                        {{ $user->user_id }}<br>
                                                                         {{ $user->jam_masuk->format('H:i') }} - {{ $user->jam_pulang->format('H:i') }}
                                                                     </small>
                                                                 </label>

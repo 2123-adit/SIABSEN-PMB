@@ -108,12 +108,12 @@
                         <form method="POST" action="{{ route('login') }}">
                             @csrf
 
-                            <!-- Username -->
+                            <!-- User ID -->
                             <div class="form-floating mb-3">
-                                <input type="text" class="form-control @error('username') is-invalid @enderror"
-                                       id="username" name="username" placeholder="Username" value="{{ old('username') }}" required autofocus>
-                                <label for="username">
-                                    <i class="bi bi-person me-2"></i>Username
+                                <input type="text" class="form-control @error('user_id') is-invalid @enderror"
+                                       id="user_id" name="user_id" placeholder="User ID" value="{{ old('user_id') }}" required autofocus>
+                                <label for="user_id">
+                                    <i class="bi bi-person me-2"></i>User ID
                                 </label>
                             </div>
 

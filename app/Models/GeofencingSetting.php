@@ -27,12 +27,23 @@ class GeofencingSetting extends Model
 
     /**
      * Ambil geofence aktif, dengan cache selama 1 jam.
+     * OPTIMIZED: Cache duration increased to 6 hours untuk production
      */
     public static function getActiveSetting()
     {
-        return cache()->remember('active_geofence', 3600, function() {
-            return self::where('is_active', true)->first();
+        return cache()->remember('active_geofence_v2', 21600, function() { // 6 hours
+            return self::where('is_active', true)
+                      ->select(['id', 'nama_lokasi', 'latitude', 'longitude', 'radius_meter']) // SELECT only needed columns
+                      ->first();
         });
+    }
+    
+    /**
+     * Clear geofence cache when settings updated
+     */
+    public static function clearCache()
+    {
+        cache()->forget('active_geofence_v2');
     }
 
     /**
@@ -48,6 +59,7 @@ class GeofencingSetting extends Model
             'is_within' => $isWithin,
             'distance' => round($distance, 2),
             'radius' => $this->radius_meter,
+            'geofence_radius' => $this->radius_meter, // Add legacy key for compatibility
             'location_name' => $this->nama_lokasi
         ];
     }

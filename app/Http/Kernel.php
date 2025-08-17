@@ -12,7 +12,7 @@ class Kernel extends HttpKernel
      */
     protected $middleware = [
         // Tambahkan jika ingin ForceHttps global (opsional)
-        // \App\Http\Middleware\ForceHttps::class,
+        \App\Http\Middleware\ForceHttps::class,
     ];
 
     /**

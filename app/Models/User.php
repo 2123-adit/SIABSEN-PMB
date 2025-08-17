@@ -16,15 +16,17 @@ class User extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable;
 
     protected $fillable = [
-        'username', // CHANGED: nik -> username
+        'user_id', // CHANGED: username -> user_id
         'name',
         'password',
         'jabatan_id',
         'status',
         'role',
         'jam_masuk',
-        'jam_pulang'
-        // REMOVED: email, phone, alamat, gender, tanggal_lahir, foto_profil
+        'jam_pulang',
+        'password_changed',
+        'password_changed_at',
+        'foto_profil' // ADDED: foto profil field
     ];
 
     protected $hidden = [
@@ -69,5 +71,21 @@ class User extends Authenticatable
     public function getTotalTerlambatAttribute()
     {
         return $this->absensis()->where('status_masuk', 'terlambat')->count();
+    }
+    
+    // QUERY OPTIMIZATION: Scopes for common queries
+    public function scopeActiveUsers($query)
+    {
+        return $query->where('status', 'aktif');
+    }
+    
+    public function scopeWithJabatan($query)
+    {
+        return $query->with('jabatan');
+    }
+    
+    public function scopeRegularUsers($query)
+    {
+        return $query->where('role', 'user');
     }
 }

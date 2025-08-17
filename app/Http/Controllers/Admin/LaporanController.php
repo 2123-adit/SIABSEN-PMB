@@ -16,9 +16,34 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class LaporanController extends Controller
 {
+    /**
+     * Helper method to sort users by Excel order
+     */
+    private function sortUsersByExcelOrder($users)
+    {
+        $excelOrder = [
+            'ELVA ROITA SINAGA', 'RIA KURNIA SARI', 'SITI FLOWERNTA', 'YAYANG RAMADHANI',
+            'SOFIANA', 'YAN FAHRI PURBA', 'ROIDAH', 'SUKASMI', 'JANTY SULAEMAN',
+            'RICKY HIDAYAT', 'MUHAMAD YUSUF', 'SYAIFUL BAHRI', 'TUTI MEGAWATI',
+            'DEFI SAPUTRI', 'NOVI YANTI', 'DESY WAHYUNI', 'PUTRI MAHYUNI',
+            'MELDA SAFITRI', 'DEWI SARTIKA', 'SISKA REVIANA', 'DIAN SAFITRI',
+            'SARI INDAH SISKA', 'WINDY CHAIRANI', 'ROHANI', 'NURPIATI',
+            'ROSMAINI', 'NURMALA', 'RINI HAYATI', 'SITI AMINAH',
+            'LILIS SRIWAHYUNI', 'SURAHMAN', 'ANDIKA', 'FAUZI SIREGAR',
+            'DEDI KURNIAWAN', 'ILHAM', 'HUSEIN', 'SAMSUL BAHRI',
+            'DEDI SAPUTRA', 'IRFAN', 'RIAN', 'SARI DAMAYANTI',
+            'SISKA MAHARANI', 'INTAN SARI', 'SRI RAHAYU', 'FITRI APRIYANI',
+            'ARMEN', 'AHMAD YANI'
+        ];
+        
+        return $users->sortBy(function($user) use ($excelOrder) {
+            $position = array_search($user->name, $excelOrder);
+            return $position !== false ? $position : 999;
+        })->values();
+    }
     public function index(Request $request)
     {
-        $users = User::where('role', 'user')->where('status', 'aktif')->get();
+        $users = $this->sortUsersByExcelOrder(User::where('role', 'user')->where('status', 'aktif')->get());
         $jabatans = Jabatan::all();
         
         return view('admin.laporan.index', compact('users', 'jabatans'));
@@ -72,18 +97,20 @@ class LaporanController extends Controller
             $usersQuery->where('jabatan_id', $request->jabatan_id);
         }
         
-        $users = $usersQuery->get();
+        $users = $this->sortUsersByExcelOrder($usersQuery->get());
         
-        // Get ALL existing attendance records in date range
+        // Get ALL existing attendance records in date range (without status filter for complete coverage)
         $existingAbsensis = Absensi::with(['user', 'user.jabatan'])
             ->whereBetween('tanggal', [$startDate, $endDate])
             ->whereIn('user_id', $users->pluck('id'))
-            ->when($request->filled('status_kehadiran'), function($query) use ($request) {
-                return $query->where('status_kehadiran', $request->status_kehadiran);
-            })
             ->orderBy('tanggal', 'desc')
             ->orderBy('user_id', 'asc')
             ->get();
+            
+        // Apply status filter only when showing filtered results  
+        $filteredAbsensis = $existingAbsensis->when($request->filled('status_kehadiran'), function($collection) use ($request) {
+            return $collection->where('status_kehadiran', $request->status_kehadiran);
+        });
         
         // Get holidays in the date range
         $holidays = Holiday::whereBetween('tanggal', [$startDate, $endDate])
@@ -96,18 +123,36 @@ class LaporanController extends Controller
         
         $completeData = collect();
         
-        // Strategy 1: If we want to show ONLY existing records (like current behavior)
-        if ($request->filled('status_kehadiran') || !$request->has('include_missing')) {
-            // Return only existing attendance records (filtered if needed)
-            return $existingAbsensis;
+        // Strategy: Determine whether to show complete coverage or filtered results
+        if ($request->filled('status_kehadiran')) {
+            if ($request->status_kehadiran === 'alfa') {
+                // When filtering for ALFA: Show complete coverage (missing days will show as ALFA virtual)
+                // Continue to complete coverage logic below
+            } else {
+                // When filtering for specific existing status (hadir/izin/sakit): Show only existing records with that status
+                return $filteredAbsensis;
+            }
         }
         
-        // Strategy 2: If we want to show ALL expected attendance (including missing)
+        // Default (no filter) OR filtering for ALFA: Show complete attendance coverage (existing records + missing days as ALFA)
+        
+        // First, add all existing records to maintain their original status
+        foreach ($existingAbsensis as $existingRecord) {
+            $completeData->push($existingRecord);
+        }
+        
+        // Then, create a lookup map for faster checking
+        $existingLookup = $existingAbsensis->groupBy(function($absensi) {
+            return $absensi->user_id . '_' . $absensi->tanggal->toDateString();
+        });
+        
+        // Now generate virtual ALFA records for missing days only
         foreach ($users as $user) {
             $currentDate = $startDate->copy();
             
             while ($currentDate <= $endDate) {
                 $dateString = $currentDate->format('Y-m-d');
+                $lookupKey = $user->id . '_' . $dateString;
                 $isHoliday = in_array($dateString, $holidays);
                 
                 // Check if user's jabatan should work on this day
@@ -116,52 +161,41 @@ class LaporanController extends Controller
                     $isWorkingDay = $user->jabatan->isWorkingDay($currentDate);
                 }
                 
-                // Skip if it's holiday or not a working day
-                if ($isHoliday || !$isWorkingDay) {
+                // Skip if it's holiday or not a working day or already has record
+                if ($isHoliday || !$isWorkingDay || $existingLookup->has($lookupKey)) {
                     $currentDate->addDay();
                     continue;
                 }
                 
-                // Look for existing attendance record
-                $existingRecord = $existingAbsensis->first(function($absensi) use ($user, $dateString) {
-                    return $absensi->user_id == $user->id && 
-                           $absensi->tanggal->format('Y-m-d') == $dateString;
-                });
+                // Create virtual "Alfa" record for missing attendance
+                $virtualAbsensi = new Absensi([
+                    'user_id' => $user->id,
+                    'tanggal' => $currentDate->copy(),
+                    'jam_masuk' => null,
+                    'jam_pulang' => null,
+                    'status_kehadiran' => 'alfa',
+                    'status_masuk' => null,
+                    'status_pulang' => null,
+                    'menit_terlambat' => 0,
+                    'keterangan' => 'Tidak melakukan absensi',
+                    'foto_masuk' => null,
+                    'foto_pulang' => null,
+                    'latitude_masuk' => null,
+                    'longitude_masuk' => null,
+                    'latitude_pulang' => null,
+                    'longitude_pulang' => null,
+                    'is_within_geofence_masuk' => null,
+                    'is_within_geofence_pulang' => null,
+                    'distance_from_office_masuk' => null,
+                    'distance_from_office_pulang' => null,
+                    'source' => 'system_generated'
+                ]);
                 
-                if ($existingRecord) {
-                    // Add existing record
-                    $completeData->push($existingRecord);
-                } else {
-                    // Create virtual "Alfa" record for missing attendance
-                    $virtualAbsensi = new Absensi([
-                        'user_id' => $user->id,
-                        'tanggal' => $currentDate->copy(),
-                        'jam_masuk' => null,
-                        'jam_pulang' => null,
-                        'status_kehadiran' => 'alfa',
-                        'status_masuk' => null,
-                        'status_pulang' => null,
-                        'menit_terlambat' => 0,
-                        'keterangan' => 'Tidak melakukan absensi',
-                        'foto_masuk' => null,
-                        'foto_pulang' => null,
-                        'latitude_masuk' => null,
-                        'longitude_masuk' => null,
-                        'latitude_pulang' => null,
-                        'longitude_pulang' => null,
-                        'is_within_geofence_masuk' => null,
-                        'is_within_geofence_pulang' => null,
-                        'distance_from_office_masuk' => null,
-                        'distance_from_office_pulang' => null,
-                        'source' => 'system_generated'
-                    ]);
-                    
-                    // Set relationship manually for virtual record
-                    $virtualAbsensi->setRelation('user', $user);
-                    $virtualAbsensi->exists = false; // Mark as virtual
-                    
-                    $completeData->push($virtualAbsensi);
-                }
+                // Set relationship manually for virtual record
+                $virtualAbsensi->setRelation('user', $user);
+                $virtualAbsensi->exists = false; // Mark as virtual
+                
+                $completeData->push($virtualAbsensi);
                 
                 $currentDate->addDay();
             }
@@ -213,21 +247,51 @@ class LaporanController extends Controller
         $bulan = $request->get('bulan', Carbon::now()->month);
         $tahun = $request->get('tahun', Carbon::now()->year);
 
+        // Calculate start and end dates for the month
+        $startDate = Carbon::create($tahun, $bulan, 1);
+        $endDate = $startDate->copy()->endOfMonth();
+
         // Statistik per jabatan
         $statistikJabatan = Jabatan::with(['users' => function($query) {
                 $query->where('status', 'aktif')->where('role', 'user');
             }])
             ->get()
-            ->map(function($jabatan) use ($bulan, $tahun) {
+            ->map(function($jabatan) use ($bulan, $tahun, $startDate, $endDate) {
                 $totalUser = $jabatan->users->count();
                 
-                $totalAbsensi = Absensi::whereHas('user', function($q) use ($jabatan) {
-                        $q->where('jabatan_id', $jabatan->id);
-                    })
-                    ->whereMonth('tanggal', $bulan)
-                    ->whereYear('tanggal', $tahun)
-                    ->count();
+                if ($totalUser == 0) {
+                    return [
+                        'nama_jabatan' => $jabatan->nama_jabatan,
+                        'total_user' => 0,
+                        'total_hari_kerja' => 0,
+                        'total_hadir' => 0,
+                        'total_izin' => 0,
+                        'total_sakit' => 0,
+                        'total_alfa' => 0,
+                        'total_terlambat' => 0,
+                        'persentase_kehadiran' => 0
+                    ];
+                }
 
+                // Calculate working days for this position in the month
+                $totalHariKerja = 0;
+                if ($jabatan && method_exists($jabatan, 'getWorkingDaysCount')) {
+                    $totalHariKerja = $jabatan->getWorkingDaysCount($startDate, $endDate);
+                } else {
+                    // Default: count weekdays only (Mon-Fri)
+                    $current = $startDate->copy();
+                    while ($current <= $endDate) {
+                        if (!in_array($current->dayOfWeek, [0, 6])) { // 0=Sunday, 6=Saturday
+                            $totalHariKerja++;
+                        }
+                        $current->addDay();
+                    }
+                }
+
+                // Total possible attendances = total users * working days
+                $totalKemungkinanAbsensi = $totalUser * $totalHariKerja;
+
+                // Get actual attendance records
                 $totalHadir = Absensi::whereHas('user', function($q) use ($jabatan) {
                         $q->where('jabatan_id', $jabatan->id);
                     })
@@ -235,6 +299,35 @@ class LaporanController extends Controller
                     ->whereYear('tanggal', $tahun)
                     ->where('status_kehadiran', 'hadir')
                     ->count();
+
+                $totalIzin = Absensi::whereHas('user', function($q) use ($jabatan) {
+                        $q->where('jabatan_id', $jabatan->id);
+                    })
+                    ->whereMonth('tanggal', $bulan)
+                    ->whereYear('tanggal', $tahun)
+                    ->where('status_kehadiran', 'izin')
+                    ->count();
+
+                $totalSakit = Absensi::whereHas('user', function($q) use ($jabatan) {
+                        $q->where('jabatan_id', $jabatan->id);
+                    })
+                    ->whereMonth('tanggal', $bulan)
+                    ->whereYear('tanggal', $tahun)
+                    ->where('status_kehadiran', 'sakit')
+                    ->count();
+
+                $totalAlfa = Absensi::whereHas('user', function($q) use ($jabatan) {
+                        $q->where('jabatan_id', $jabatan->id);
+                    })
+                    ->whereMonth('tanggal', $bulan)
+                    ->whereYear('tanggal', $tahun)
+                    ->where('status_kehadiran', 'alfa')
+                    ->count();
+
+                // Add virtual alfa (missing attendances)
+                $totalRecordsAda = $totalHadir + $totalIzin + $totalSakit + $totalAlfa;
+                $totalAlfaVirtual = max(0, $totalKemungkinanAbsensi - $totalRecordsAda);
+                $totalAlfaSebenarnya = $totalAlfa + $totalAlfaVirtual;
 
                 $totalTerlambat = Absensi::whereHas('user', function($q) use ($jabatan) {
                         $q->where('jabatan_id', $jabatan->id);
@@ -247,10 +340,13 @@ class LaporanController extends Controller
                 return [
                     'nama_jabatan' => $jabatan->nama_jabatan,
                     'total_user' => $totalUser,
-                    'total_absensi' => $totalAbsensi,
+                    'total_hari_kerja' => $totalHariKerja,
                     'total_hadir' => $totalHadir,
+                    'total_izin' => $totalIzin,
+                    'total_sakit' => $totalSakit,
+                    'total_alfa' => $totalAlfaSebenarnya,
                     'total_terlambat' => $totalTerlambat,
-                    'persentase_kehadiran' => $totalAbsensi > 0 ? round(($totalHadir / $totalAbsensi) * 100, 2) : 0
+                    'persentase_kehadiran' => $totalKemungkinanAbsensi > 0 ? round(($totalHadir / $totalKemungkinanAbsensi) * 100, 2) : 0
                 ];
             });
 

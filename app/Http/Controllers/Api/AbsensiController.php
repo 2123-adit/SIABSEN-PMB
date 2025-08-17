@@ -1,8 +1,6 @@
 <?php
 
 namespace App\Http\Controllers\Api;
-
-use App\Http\Controllers\Controller;
 use App\Models\Absensi;
 use App\Models\Holiday;
 use App\Services\AbsensiService;
@@ -10,7 +8,7 @@ use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
 
-class AbsensiController extends Controller
+class AbsensiController extends BaseApiController
 {
     protected $absensiService;
 
@@ -22,10 +20,14 @@ class AbsensiController extends Controller
     public function dashboard(Request $request)
     {
         $user = $request->user();
+        $user->load('jabatan'); // EAGER LOAD jabatan relation
         $today = Carbon::today();
 
         // Cek hari libur
         $isHoliday = Holiday::isHoliday($today);
+        
+        // Cek jadwal kerja berdasarkan jabatan
+        $isWorkingDay = $user->jabatan->isWorkingDay($today);
 
         // Absensi hari ini
         $absensiHariIni = $user->absensiHariIni();
@@ -53,30 +55,30 @@ class AbsensiController extends Controller
             'persentase_kehadiran' => $user->persentase_kehadiran
         ];
 
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'user' => [
-                    'name' => $user->name,
-                    'jabatan' => $user->jabatan->nama_jabatan,
-                    'jam_masuk' => $user->jam_masuk,
-                    'jam_pulang' => $user->jam_pulang
-                ],
-                'today' => [
-                    'tanggal' => $today->format('Y-m-d'),
-                    'is_holiday' => $isHoliday,
-                    'absensi' => $absensiHariIni ? [
-                        'jam_masuk' => $absensiHariIni->jam_masuk,
-                        'jam_pulang' => $absensiHariIni->jam_pulang,
-                        'status_masuk' => $absensiHariIni->status_masuk,
-                        'status_pulang' => $absensiHariIni->status_pulang,
-                        'sudah_absen_masuk' => $absensiHariIni->sudahAbsenMasuk(),
-                        'sudah_absen_pulang' => $absensiHariIni->sudahAbsenPulang()
-                    ] : null
-                ],
-                'statistik' => $statistik
-            ]
-        ]);
+        return $this->successResponse([
+            'user' => [
+                'name' => $user->name,
+                'jabatan' => $user->jabatan->nama_jabatan,
+                'jam_masuk' => $user->jam_masuk,
+                'jam_pulang' => $user->jam_pulang,
+                'jadwal_kerja' => $user->jabatan->jadwal_kerja
+            ],
+            'today' => [
+                'tanggal' => $today->format('Y-m-d'),
+                'is_holiday' => $isHoliday,
+                'is_working_day' => $isWorkingDay,
+                'can_attend' => $isWorkingDay && !$isHoliday,
+                'absensi' => $absensiHariIni ? [
+                    'jam_masuk' => $absensiHariIni->jam_masuk,
+                    'jam_pulang' => $absensiHariIni->jam_pulang,
+                    'status_masuk' => $absensiHariIni->status_masuk,
+                    'status_pulang' => $absensiHariIni->status_pulang,
+                    'sudah_absen_masuk' => $absensiHariIni->sudahAbsenMasuk(),
+                    'sudah_absen_pulang' => $absensiHariIni->sudahAbsenPulang()
+                ] : null
+            ],
+            'statistik' => $statistik
+        ], 'Dashboard data berhasil diambil');
     }
 
     public function absenMasuk(Request $request)
@@ -95,16 +97,9 @@ class AbsensiController extends Controller
                 $request->file('foto')
             );
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Absen masuk berhasil',
-                'data' => $result
-            ]);
+            return $this->successResponse($result, 'Absen masuk berhasil');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 400);
+            return $this->errorResponse($e->getMessage(), 'ABSEN_MASUK_ERROR', 400);
         }
     }
 
@@ -124,16 +119,9 @@ class AbsensiController extends Controller
                 $request->file('foto')
             );
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Absen pulang berhasil',
-                'data' => $result
-            ]);
+            return $this->successResponse($result, 'Absen pulang berhasil');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 400);
+            return $this->errorResponse($e->getMessage(), 'ABSEN_PULANG_ERROR', 400);
         }
     }
 
@@ -163,19 +151,22 @@ class AbsensiController extends Controller
                 ];
             });
 
-        return response()->json([
-            'success' => true,
-            'data' => $absensis
-        ]);
+        return $this->successResponse($absensis, 'Data kalender absensi berhasil diambil');
     }
 
     public function riwayat(Request $request)
     {
         $user = $request->user();
         $limit = $request->get('limit', 10);
+        $page = $request->get('page', 1);
+        $offset = ($page - 1) * $limit;
+
+        // Get total count
+        $total = $user->absensis()->count();
 
         $absensis = $user->absensis()
             ->orderBy('tanggal', 'desc')
+            ->offset($offset)
             ->limit($limit)
             ->get()
             ->map(function($absensi) {
@@ -193,9 +184,105 @@ class AbsensiController extends Controller
                 ];
             });
 
-        return response()->json([
-            'success' => true,
-            'data' => $absensis
-        ]);
+        $meta = [
+            'total' => $total,
+            'per_page' => $limit,
+            'current_page' => $page,
+            'last_page' => ceil($total / $limit),
+            'from' => $offset + 1,
+            'to' => min($offset + $limit, $total)
+        ];
+
+        return $this->successWithMeta($absensis, $meta, 'Riwayat absensi berhasil diambil');
+    }
+
+    /**
+     * Check geofence status (untuk preview sebelum submit absensi)
+     * Endpoint: POST /api/absensi/check-geofence
+     */
+    public function checkGeofence(Request $request)
+    {
+        try {
+            // Validasi input
+            $request->validate([
+                'latitude' => 'required|numeric|between:-90,90',
+                'longitude' => 'required|numeric|between:-180,180',
+            ]);
+
+            $latitude = $request->latitude;
+            $longitude = $request->longitude;
+
+            \Log::info('=== GEOFENCE CHECK API REQUEST ===', [
+                'user_id' => auth()->id(),
+                'latitude' => $latitude,
+                'longitude' => $longitude,
+                'time' => now()->toDateTimeString(),
+            ]);
+
+            // Panggil service untuk validasi geofencing
+            $geofenceResult = $this->absensiService->validateGeofencing($latitude, $longitude);
+
+            \Log::info('=== GEOFENCE CHECK API RESULT ===', [
+                'result' => $geofenceResult,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => $geofenceResult['is_within'] 
+                    ? 'Anda berada dalam area kantor' 
+                    : 'Anda berada di luar area kantor',
+                'data' => [
+                    'is_within' => $geofenceResult['is_within'],
+                    'distance' => $geofenceResult['distance'],
+                    'radius' => $geofenceResult['geofence_radius'],
+                    'location_name' => $geofenceResult['location_name'],
+                ]
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Data tidak valid',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            \Log::error('Error in checkGeofence: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memeriksa lokasi: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Method untuk route /api/geofencing/check
+     */
+    public function checkGeofencing(Request $request)
+    {
+        // Delegate ke method checkGeofence yang sudah ada       
+        return $this->checkGeofence($request);
+    }
+
+    /**
+     * Get active geofencing settings
+     * Endpoint: GET /api/geofencing/settings
+     */
+    public function getGeofencingSettings()
+    {
+        try {
+            $geofencingSetting = \App\Models\GeofencingSetting::getActiveSetting();
+
+            if (!$geofencingSetting) {
+                return $this->errorResponse('Pengaturan geofencing tidak ditemukan', 'GEOFENCING_NOT_FOUND', 404);       
+            }
+
+            return $this->successResponse($geofencingSetting, 'Pengaturan geofencing berhasil diambil');
+        } catch (\Exception $e) {
+            \Log::error('Error getting geofencing settings: ' . $e->getMessage());
+            return $this->errorResponse('Gagal mengambil pengaturan geofencing', 'GEOFENCING_ERROR', 500);
+        }
     }
 }

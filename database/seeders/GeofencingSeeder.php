@@ -12,8 +12,8 @@ class GeofencingSeeder extends Seeder
         // Default Geofencing Setting untuk Medan
         GeofencingSetting::create([
             'nama_lokasi' => 'Kantor PMB Medan',
-            'latitude' => 3.5952, // Koordinat Medan, North Sumatra
-            'longitude' => 98.6722,
+            'latitude' => 3.600348, // Koordinat Medan, North Sumatra
+            'longitude' => 98.7178027,
             'radius_meter' => 100, // 100 meter radius
             'deskripsi' => 'Area geofencing default untuk kantor PMB di Medan',
             'is_active' => true

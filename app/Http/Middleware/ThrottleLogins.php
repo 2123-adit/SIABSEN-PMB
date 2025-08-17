@@ -25,7 +25,7 @@ class ThrottleLogins
             }
             
             return back()->withErrors([
-                'username' => "Terlalu banyak percobaan login. Coba lagi dalam {$seconds} detik."
+                'user_id' => "Terlalu banyak percobaan login. Coba lagi dalam {$seconds} detik."
             ]);
         }
 
@@ -44,6 +44,6 @@ class ThrottleLogins
 
     protected function throttleKey(Request $request): string
     {
-        return 'login_attempts:' . $request->ip() . ':' . strtolower($request->input('username'));
+        return 'login_attempts:' . $request->ip() . ':' . strtolower($request->input('user_id'));
     }
 }

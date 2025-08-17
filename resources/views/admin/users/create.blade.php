@@ -106,13 +106,13 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label class="form-label">Username <span class="text-danger">*</span></label>
-                                <input type="text" name="username" class="form-control @error('username') is-invalid @enderror" 
-                                       value="{{ old('username') }}" required>
-                                @error('username')
+                                <label class="form-label">User ID <span class="text-danger">*</span></label>
+                                <input type="text" name="user_id" class="form-control @error('user_id') is-invalid @enderror" 
+                                       value="{{ old('user_id') }}" required>
+                                @error('user_id')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
-                                <div class="form-text">Username untuk login (tanpa spasi)</div>
+                                <div class="form-text">User ID untuk login (tanpa spasi)</div>
                             </div>
                         </div>
                         <div class="col-md-6">

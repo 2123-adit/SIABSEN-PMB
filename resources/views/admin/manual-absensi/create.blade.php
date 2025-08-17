@@ -66,7 +66,7 @@
                                                 data-jam-masuk="{{ $user->jam_masuk->format('H:i') }}"
                                                 data-jam-pulang="{{ $user->jam_pulang->format('H:i') }}"
                                                 {{ old('user_id') == $user->id ? 'selected' : '' }}>
-                                            {{ $user->name }} ({{ $user->username }}) - {{ $user->jabatan->nama_jabatan }}
+                                            {{ $user->name }} ({{ $user->user_id }}) - {{ $user->jabatan->nama_jabatan }}
                                         </option>
                                     @endforeach
                                 </select>

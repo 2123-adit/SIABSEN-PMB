@@ -40,8 +40,8 @@
                     <div class="col-md-6">
                         <table class="table table-borderless">
                             <tr>
-                                <td><strong>Username:</strong></td>
-                                <td>{{ $user->username }}</td>
+                                <td><strong>User ID:</strong></td>
+                                <td>{{ $user->user_id }}</td>
                             </tr>
                             <tr>
                                 <td><strong>Nama:</strong></td>
@@ -50,6 +50,12 @@
                             <tr>
                                 <td><strong>Jabatan:</strong></td>
                                 <td>{{ $user->jabatan->nama_jabatan }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Jadwal Kerja:</strong></td>
+                                <td>
+                                    <span class="badge bg-primary">{{ $user->jabatan->jadwal_display }}</span>
+                                </td>
                             </tr>
                         </table>
                     </div>
@@ -86,6 +92,63 @@
                         </table>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Jadwal Kerja Detail -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="mb-0">Jadwal Kerja Detail</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    @php
+                        $dayNames = [
+                            'senin' => 'Senin',
+                            'selasa' => 'Selasa', 
+                            'rabu' => 'Rabu',
+                            'kamis' => 'Kamis',
+                            'jumat' => 'Jumat',
+                            'sabtu' => 'Sabtu',
+                            'minggu' => 'Minggu'
+                        ];
+                        $jadwalKerja = $user->jabatan->jadwal_kerja ?? [
+                            'senin' => true, 'selasa' => true, 'rabu' => true, 
+                            'kamis' => true, 'jumat' => true, 'sabtu' => false, 'minggu' => false
+                        ];
+                    @endphp
+                    
+                    @foreach($dayNames as $key => $dayName)
+                        <div class="col-md-12 col-lg-6 col-xl-3 mb-2">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    @if($jadwalKerja[$key] ?? false)
+                                        <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                                    @else
+                                        <i class="bi bi-x-circle-fill text-danger fs-5"></i>
+                                    @endif
+                                </div>
+                                <div>
+                                    <strong>{{ $dayName }}</strong><br>
+                                    <small class="text-muted">
+                                        @if($jadwalKerja[$key] ?? false)
+                                            {{ $user->jam_masuk->format('H:i') }} - {{ $user->jam_pulang->format('H:i') }}
+                                        @else
+                                            Libur
+                                        @endif
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+                
+                @if($user->jabatan->keterangan_jadwal)
+                    <div class="mt-3 pt-3 border-top">
+                        <h6 class="text-muted">Keterangan Jadwal:</h6>
+                        <p class="mb-0">{{ $user->jabatan->keterangan_jadwal }}</p>
+                    </div>
+                @endif
             </div>
         </div>
 

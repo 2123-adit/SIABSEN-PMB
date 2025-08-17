@@ -151,7 +151,7 @@
                                      style="width: {{ $stat['persentase_kehadiran'] }}%"></div>
                             </div>
                             <small class="text-muted">
-                                {{ $stat['total_hadir'] }}/{{ $stat['total_absensi'] }} kehadiran
+                                {{ $stat['total_hadir'] }}/{{ $stat['total_user'] * $stat['total_hari_kerja'] }} kehadiran
                             </small>
                         </div>
                         <div class="comparison-value">
@@ -275,8 +275,11 @@
                             <tr>
                                 <th>Jabatan</th>
                                 <th>Total Pegawai</th>
-                                <th>Total Absensi</th>
+                                <th>Hari Kerja</th>
                                 <th>Hadir</th>
+                                <th>Izin</th>
+                                <th>Sakit</th>
+                                <th>Alfa</th>
                                 <th>Terlambat</th>
                                 <th>Persentase</th>
                                 <th>Tingkat Kedisiplinan</th>
@@ -289,9 +292,18 @@
                                         <div class="fw-bold">{{ $stat['nama_jabatan'] }}</div>
                                     </td>
                                     <td>{{ $stat['total_user'] }}</td>
-                                    <td>{{ $stat['total_absensi'] }}</td>
+                                    <td>{{ $stat['total_hari_kerja'] }}</td>
                                     <td>
                                         <span class="badge bg-success">{{ $stat['total_hadir'] }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ $stat['total_izin'] }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ $stat['total_sakit'] }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-danger">{{ $stat['total_alfa'] }}</span>
                                     </td>
                                     <td>
                                         <span class="badge bg-warning">{{ $stat['total_terlambat'] }}</span>

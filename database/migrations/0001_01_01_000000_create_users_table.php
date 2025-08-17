@@ -12,7 +12,7 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('username')->unique(); // CHANGED: NIK -> Username
+            $table->string('user_id')->unique(); // CHANGED: username -> user_id
             $table->string('name');
             // REMOVED: email, phone, alamat, gender, tanggal_lahir, foto_profil
             $table->unsignedBigInteger('jabatan_id');
@@ -25,7 +25,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->foreign('jabatan_id')->references('id')->on('jabatans')->onDelete('cascade');
-            $table->index(['username', 'status']);
+            $table->index(['user_id', 'status']);
         });
     }
 

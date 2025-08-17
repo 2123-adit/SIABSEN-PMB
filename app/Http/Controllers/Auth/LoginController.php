@@ -21,12 +21,12 @@ class LoginController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'username' => 'required',
+            'user_id' => 'required',
             'password' => 'required',
         ]);
 
         $credentials = [
-            'username' => $request->username,
+            'user_id' => $request->user_id,
             'password' => $request->password,
             'status' => 'aktif',
             'role' => 'admin'
@@ -34,7 +34,7 @@ class LoginController extends Controller
 
         // Log login attempts
         Log::info('Login attempt', [
-            'username' => $request->username,
+            'user_id' => $request->user_id,
             'ip' => $request->ip(),
             'user_agent' => $request->userAgent()
         ]);
@@ -45,7 +45,7 @@ class LoginController extends Controller
             // Log successful login
             Log::info('Login successful', [
                 'user_id' => Auth::id(),
-                'username' => Auth::user()->username,
+                'user_id_field' => Auth::user()->user_id,
                 'ip' => $request->ip()
             ]);
             
@@ -54,13 +54,13 @@ class LoginController extends Controller
 
         // Log failed login
         Log::warning('Login failed', [
-            'username' => $request->username,
+            'user_id' => $request->user_id,
             'ip' => $request->ip()
         ]);
 
         return back()->withErrors([
-            'username' => 'Username atau password salah.',
-        ])->onlyInput('username');
+            'user_id' => 'User ID atau password salah.',
+        ])->onlyInput('user_id');
     }
 
     public function logout(Request $request)

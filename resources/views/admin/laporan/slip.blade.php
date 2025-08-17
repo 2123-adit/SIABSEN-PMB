@@ -174,9 +174,9 @@
     <div class="info">
         <table>
             <tr>
-                <td class="label">Username</td>
+                <td class="label">User ID</td>
                 <td class="colon">:</td>
-                <td>{{ $user->username }}</td>
+                <td>{{ $user->user_id }}</td>
                 <td class="label">Jabatan</td>
                 <td class="colon">:</td>
                 <td>{{ $user->jabatan->nama_jabatan }}</td>

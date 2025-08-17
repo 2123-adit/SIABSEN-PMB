@@ -1,175 +1,195 @@
 <?php
-// app/Exports/AbsensiExport.php - FIXED V2
+// app/Exports/AbsensiExport.php - MATRIX FORMAT V3
 
 namespace App\Exports;
 
-use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithHeadings;
-use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
+use Maatwebsite\Excel\Concerns\WithTitle;
+use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Color;
+use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 
-class AbsensiExport implements FromCollection, WithHeadings, WithMapping, WithStyles, WithColumnWidths
+class AbsensiExport implements FromArray, WithHeadings, WithStyles, WithColumnWidths, WithTitle, WithEvents
 {
     protected $absensis;
     protected $filters;
+    protected $dateRange;
+    protected $lateAttendanceData = []; // Store positions of late attendance
+    protected $alfaAttendanceData = []; // Store positions of alfa attendance
 
     public function __construct($absensis, $filters)
     {
         $this->absensis = $absensis;
         $this->filters = $filters;
+        $this->dateRange = CarbonPeriod::create($filters['tanggal_mulai'], $filters['tanggal_selesai']);
     }
 
-    public function collection()
+    public function array(): array
     {
-        return $this->absensis;
+        // Group absensi by user
+        $grouped = $this->absensis->groupBy('user.id');
+        $data = [];
+        $rowIndex = 2; // Starting from row 2 (after header)
+
+        $no = 1; // Initialize row number
+        foreach ($grouped as $userId => $records) {
+            $user = $records->first()->user;
+            $recordsByDate = $records->keyBy(fn($a) => $a->tanggal->format('Y-m-d'));
+            
+            $row = [
+                $no++, // Add row number
+                $user->name,
+                $user->jabatan->nama_jabatan ?? '-'
+            ];
+
+            // Add attendance data for each date
+            $colIndex = 'D'; // Starting from column D (after No, Name and Position)
+            foreach ($this->dateRange as $date) {
+                $record = $recordsByDate[$date->format('Y-m-d')] ?? null;
+                
+                if ($record) {
+                    if ($record->status_kehadiran === 'hadir') {
+                        $jamMasuk = $record->jam_masuk ? Carbon::parse($record->jam_masuk)->format('H:i') : '-';
+                        $jamPulang = $record->jam_pulang ? Carbon::parse($record->jam_pulang)->format('H:i') : '-';
+                        $menitTerlambat = $record->menit_terlambat ?? 0;
+                        
+                        // Format sama seperti PDF: Status, Jam, Menit terlambat
+                        $cellValue = "HADIR\n{$jamMasuk} - {$jamPulang}\n{$menitTerlambat} menit";
+                        
+                        // Store late attendance positions for styling
+                        if ($menitTerlambat > 0) {
+                            $this->lateAttendanceData[] = $colIndex . $rowIndex;
+                        }
+                    } else {
+                        $cellValue = strtoupper($record->status_kehadiran);
+                    }
+                } else {
+                    // Check if this date is a working day for this user's position
+                    $isWorkingDay = true;
+                    if ($user->jabatan && method_exists($user->jabatan, 'isWorkingDay')) {
+                        $isWorkingDay = $user->jabatan->isWorkingDay($date);
+                    } else {
+                        // Default: Senin-Jumat (not weekend)
+                        $isWorkingDay = !in_array($date->dayOfWeek, [0, 6]); // 0=Sunday, 6=Saturday
+                    }
+                    
+                    if ($isWorkingDay) {
+                        $cellValue = 'ALFA';
+                        // Store alfa attendance positions for styling
+                        $this->alfaAttendanceData[] = $colIndex . $rowIndex;
+                    } else {
+                        $cellValue = '-'; // Empty for non-working days
+                    }
+                }
+                
+                $row[] = $cellValue;
+                $colIndex++; // Move to next column
+            }
+
+            $data[] = $row;
+            $rowIndex++; // Move to next row
+        }
+
+        return $data;
     }
 
     public function headings(): array
     {
-        return [
+        $headers = [
             'No',
-            'Username',
-            'Nama',
-            'Jabatan',
-            'Tanggal',
-            'Hari',
-            'Jam Masuk',
-            'Jam Pulang',
-            'Status Kehadiran',
-            'Status Masuk',
-            'Menit Terlambat',
-            'Total Jam Kerja',
-            'Lokasi Masuk',
-            'Lokasi Pulang',
-            'Geofencing Masuk',
-            'Geofencing Pulang',
-            'Jarak Masuk (m)',
-            'Jarak Pulang (m)',
-            'Source',
-            'Keterangan'
-        ];
-    }
-
-    public function map($absensi): array
-    {
-        static $no = 1;
-
-        // FIXED: Properly check if this is a virtual/generated record
-        $isVirtualRecord = !$absensi->exists || 
-                          ($absensi->source ?? '') === 'system_generated' ||
-                          ($absensi->status_kehadiran === 'alfa' && 
-                           is_null($absensi->jam_masuk) && 
-                           is_null($absensi->jam_pulang) && 
-                           is_null($absensi->foto_masuk));
-
-        // FIXED: Proper time formatting
-        $jamMasuk = '-';
-        $jamPulang = '-';
-        
-        if ($absensi->jam_masuk) {
-            if (is_string($absensi->jam_masuk)) {
-                $jamMasuk = date('H:i', strtotime($absensi->jam_masuk));
-            } else {
-                $jamMasuk = $absensi->jam_masuk->format('H:i');
-            }
-        }
-        
-        if ($absensi->jam_pulang) {
-            if (is_string($absensi->jam_pulang)) {
-                $jamPulang = date('H:i', strtotime($absensi->jam_pulang));
-            } else {
-                $jamPulang = $absensi->jam_pulang->format('H:i');
-            }
-        }
-
-        // FIXED: Calculate total working hours properly
-        $totalJamKerja = '0 jam';
-        if (!$isVirtualRecord && $absensi->jam_masuk && $absensi->jam_pulang) {
-            try {
-                $masuk = is_string($absensi->jam_masuk) ? 
-                        \Carbon\Carbon::createFromFormat('H:i:s', $absensi->jam_masuk) : 
-                        $absensi->jam_masuk;
-                        
-                $pulang = is_string($absensi->jam_pulang) ? 
-                         \Carbon\Carbon::createFromFormat('H:i:s', $absensi->jam_pulang) : 
-                         $absensi->jam_pulang;
-                
-                $diffInHours = $pulang->diffInHours($masuk, true);
-                $totalJamKerja = number_format($diffInHours, 1) . ' jam';
-            } catch (\Exception $e) {
-                $totalJamKerja = '0 jam';
-            }
-        }
-
-        return [
-            $no++,
-            $absensi->user->username ?? 'N/A',
-            $absensi->user->name ?? 'N/A',
-            $absensi->user->jabatan->nama_jabatan ?? 'N/A',
-            $absensi->tanggal->format('d/m/Y'),
-            $absensi->tanggal->locale('id')->dayName,
-            $jamMasuk,
-            $jamPulang,
-            ucfirst($absensi->status_kehadiran),
-            $absensi->status_masuk ? ucfirst(str_replace('_', ' ', $absensi->status_masuk)) : '-',
-            $absensi->menit_terlambat ?? 0,
-            $totalJamKerja,
-            // Location info
-            $isVirtualRecord ? '-' : ($this->getGoogleMapsLink($absensi->latitude_masuk, $absensi->longitude_masuk) ?? '-'),
-            $isVirtualRecord ? '-' : ($this->getGoogleMapsLink($absensi->latitude_pulang, $absensi->longitude_pulang) ?? '-'),
-            // Geofencing status
-            $isVirtualRecord ? '-' : ($absensi->is_within_geofence_masuk ? 'Dalam Area' : 'Luar Area'),
-            $isVirtualRecord ? '-' : ($absensi->is_within_geofence_pulang ? 'Dalam Area' : 'Luar Area'),
-            // Distance
-            $isVirtualRecord ? '-' : ($absensi->distance_from_office_masuk ?? '-'),
-            $isVirtualRecord ? '-' : ($absensi->distance_from_office_pulang ?? '-'),
-            // Source
-            $this->getSourceText($absensi->source ?? ($isVirtualRecord ? 'system_generated' : 'unknown')),
-            $absensi->keterangan ?? ($isVirtualRecord ? 'Tidak melakukan absensi' : '-')
-        ];
-    }
-
-    private function getGoogleMapsLink($lat, $lng): ?string
-    {
-        if ($lat && $lng) {
-            return "https://www.google.com/maps?q={$lat},{$lng}";
-        }
-        return null;
-    }
-
-    private function getSourceText($source): string
-    {
-        $sources = [
-            'mobile' => '📱 Mobile App',
-            'manual' => '✏️ Manual Input', 
-            'bulk' => '📝 Bulk Input',
-            'system_generated' => '🤖 System Generated',
-            'unknown' => '❓ Unknown'
+            'Nama Karyawan',
+            'Jabatan'
         ];
 
-        return $sources[$source] ?? '❓ Unknown';
+        // Add date headers
+        foreach ($this->dateRange as $date) {
+            $headers[] = $date->format('d/m');
+        }
+
+        return $headers;
+    }
+
+    public function title(): string
+    {
+        $periode = Carbon::parse($this->filters['tanggal_mulai'])->format('d/m/Y') . ' - ' . 
+                   Carbon::parse($this->filters['tanggal_selesai'])->format('d/m/Y');
+        return "Laporan Absensi {$periode}";
     }
 
     public function styles(Worksheet $sheet)
     {
+        $lastColumn = $sheet->getHighestColumn();
+        $lastRow = $sheet->getHighestRow();
+        
         return [
             // Header row styling
             1 => [
                 'font' => [
                     'bold' => true,
-                    'color' => ['rgb' => 'FFFFFF']
+                    'color' => ['rgb' => 'FFFFFF'],
+                    'size' => 11
                 ],
                 'fill' => [
-                    'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
-                    'startColor' => ['rgb' => '667eea']
+                    'fillType' => Fill::FILL_SOLID,
+                    'startColor' => ['rgb' => '2C3E50']
+                ],
+                'alignment' => [
+                    'horizontal' => Alignment::HORIZONTAL_CENTER,
+                    'vertical' => Alignment::VERTICAL_CENTER,
+                    'wrapText' => true
+                ],
+                'borders' => [
+                    'allBorders' => [
+                        'borderStyle' => Border::BORDER_THIN,
+                        'color' => ['rgb' => '000000']
+                    ]
                 ]
             ],
-            // Data rows
-            'A2:T1000' => [
+            // No, Name and Position columns (A, B & C)
+            'A2:C' . $lastRow => [
                 'font' => [
-                    'size' => 10
+                    'size' => 10,
+                    'bold' => true
+                ],
+                'fill' => [
+                    'fillType' => Fill::FILL_SOLID,
+                    'startColor' => ['rgb' => 'F8F9FA']
+                ],
+                'alignment' => [
+                    'horizontal' => Alignment::HORIZONTAL_LEFT,
+                    'vertical' => Alignment::VERTICAL_CENTER
+                ],
+                'borders' => [
+                    'allBorders' => [
+                        'borderStyle' => Border::BORDER_THIN,
+                        'color' => ['rgb' => '000000']
+                    ]
+                ]
+            ],
+            // Date columns (D onwards)
+            'D2:' . $lastColumn . $lastRow => [
+                'font' => [
+                    'size' => 9
+                ],
+                'alignment' => [
+                    'horizontal' => Alignment::HORIZONTAL_CENTER,
+                    'vertical' => Alignment::VERTICAL_CENTER,
+                    'wrapText' => true
+                ],
+                'borders' => [
+                    'allBorders' => [
+                        'borderStyle' => Border::BORDER_THIN,
+                        'color' => ['rgb' => '000000']
+                    ]
                 ]
             ]
         ];
@@ -177,27 +197,62 @@ class AbsensiExport implements FromCollection, WithHeadings, WithMapping, WithSt
 
     public function columnWidths(): array
     {
-        return [
+        $widths = [
             'A' => 5,   // No
-            'B' => 15,  // Username
-            'C' => 25,  // Nama
-            'D' => 20,  // Jabatan
-            'E' => 12,  // Tanggal
-            'F' => 12,  // Hari
-            'G' => 12,  // Jam Masuk
-            'H' => 12,  // Jam Pulang
-            'I' => 15,  // Status Kehadiran
-            'J' => 15,  // Status Masuk
-            'K' => 12,  // Menit Terlambat
-            'L' => 15,  // Total Jam Kerja
-            'M' => 30,  // Lokasi Masuk
-            'N' => 30,  // Lokasi Pulang
-            'O' => 15,  // Geofencing Masuk
-            'P' => 15,  // Geofencing Pulang
-            'Q' => 12,  // Jarak Masuk
-            'R' => 12,  // Jarak Pulang
-            'S' => 15,  // Source
-            'T' => 25,  // Keterangan
+            'B' => 25,  // Nama Karyawan
+            'C' => 20,  // Jabatan
+        ];
+
+        // Add width for date columns - make them narrower since they're just dates
+        $columnIndex = 'D'; // Start from column D (after No, Name, Position)
+        foreach ($this->dateRange as $date) {
+            $widths[$columnIndex] = 18; // Width for date columns
+            $columnIndex++;
+        }
+
+        return $widths;
+    }
+
+    public function registerEvents(): array
+    {
+        return [
+            AfterSheet::class => function(AfterSheet $event) {
+                // Apply special styling to late attendance cells
+                foreach ($this->lateAttendanceData as $cellAddress) {
+                    $event->sheet->getStyle($cellAddress)->applyFromArray([
+                        'fill' => [
+                            'fillType' => Fill::FILL_SOLID,
+                            'startColor' => ['rgb' => 'FFE6E6'] // Light red background for late
+                        ],
+                        'font' => [
+                            'color' => ['rgb' => 'D63031'] // Red text for late
+                        ]
+                    ]);
+                }
+                
+                // Apply special styling to alfa attendance cells
+                foreach ($this->alfaAttendanceData as $cellAddress) {
+                    $event->sheet->getStyle($cellAddress)->applyFromArray([
+                        'fill' => [
+                            'fillType' => Fill::FILL_SOLID,
+                            'startColor' => ['rgb' => 'FFCCCC'] // Light red background for alfa
+                        ],
+                        'font' => [
+                            'color' => ['rgb' => 'B71C1C'], // Dark red text for alfa
+                            'bold' => true
+                        ]
+                    ]);
+                }
+                
+                // Set row height to accommodate multi-line text
+                $lastRow = $event->sheet->getHighestRow();
+                for ($i = 2; $i <= $lastRow; $i++) {
+                    $event->sheet->getRowDimension($i)->setRowHeight(45);
+                }
+                
+                // Set header row height
+                $event->sheet->getRowDimension(1)->setRowHeight(25);
+            }
         ];
     }
 }

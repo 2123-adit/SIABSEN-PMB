@@ -14,6 +14,31 @@ use Illuminate\Support\Facades\Storage;
 
 class ManualAbsensiController extends Controller
 {
+    /**
+     * Helper method to sort users by Excel order
+     */
+    private function sortUsersByExcelOrder($users)
+    {
+        $excelOrder = [
+            'ELVA ROITA SINAGA', 'RIA KURNIA SARI', 'SITI FLOWERNTA', 'YAYANG RAMADHANI',
+            'SOFIANA', 'YAN FAHRI PURBA', 'ROIDAH', 'SUKASMI', 'JANTY SULAEMAN',
+            'RICKY HIDAYAT', 'MUHAMAD YUSUF', 'SYAIFUL BAHRI', 'TUTI MEGAWATI',
+            'DEFI SAPUTRI', 'NOVI YANTI', 'DESY WAHYUNI', 'PUTRI MAHYUNI',
+            'MELDA SAFITRI', 'DEWI SARTIKA', 'SISKA REVIANA', 'DIAN SAFITRI',
+            'SARI INDAH SISKA', 'WINDY CHAIRANI', 'ROHANI', 'NURPIATI',
+            'ROSMAINI', 'NURMALA', 'RINI HAYATI', 'SITI AMINAH',
+            'LILIS SRIWAHYUNI', 'SURAHMAN', 'ANDIKA', 'FAUZI SIREGAR',
+            'DEDI KURNIAWAN', 'ILHAM', 'HUSEIN', 'SAMSUL BAHRI',
+            'DEDI SAPUTRA', 'IRFAN', 'RIAN', 'SARI DAMAYANTI',
+            'SISKA MAHARANI', 'INTAN SARI', 'SRI RAHAYU', 'FITRI APRIYANI',
+            'ARMEN', 'AHMAD YANI'
+        ];
+        
+        return $users->sortBy(function($user) use ($excelOrder) {
+            $position = array_search($user->name, $excelOrder);
+            return $position !== false ? $position : 999;
+        })->values();
+    }
     public function index(Request $request)
     {
         $query = Absensi::with(['user', 'user.jabatan']);
@@ -37,7 +62,7 @@ class ManualAbsensiController extends Controller
                          ->orderBy('jam_masuk', 'desc')
                          ->paginate(20);
 
-        $users = User::where('role', 'user')->where('status', 'aktif')->get();
+        $users = $this->sortUsersByExcelOrder(User::where('role', 'user')->where('status', 'aktif')->get());
         $jabatans = Jabatan::all();
 
         return view('admin.manual-absensi.index', compact('absensis', 'users', 'jabatans'));
@@ -45,7 +70,7 @@ class ManualAbsensiController extends Controller
 
     public function create()
     {
-        $users = User::where('role', 'user')->where('status', 'aktif')->with('jabatan')->get();
+        $users = $this->sortUsersByExcelOrder(User::where('role', 'user')->where('status', 'aktif')->with('jabatan')->get());
         $jabatans = Jabatan::all();
         
         return view('admin.manual-absensi.create', compact('users', 'jabatans'));
@@ -170,7 +195,7 @@ class ManualAbsensiController extends Controller
 
     public function edit(Absensi $absensi)
     {
-        $users = User::where('role', 'user')->where('status', 'aktif')->with('jabatan')->get();
+        $users = $this->sortUsersByExcelOrder(User::where('role', 'user')->where('status', 'aktif')->with('jabatan')->get());
         $jabatans = Jabatan::all();
         
         return view('admin.manual-absensi.edit', compact('absensi', 'users', 'jabatans'));
@@ -308,7 +333,7 @@ class ManualAbsensiController extends Controller
 
     public function bulkCreate()
     {
-        $users = User::where('role', 'user')->where('status', 'aktif')->with('jabatan')->get();
+        $users = $this->sortUsersByExcelOrder(User::where('role', 'user')->where('status', 'aktif')->with('jabatan')->get());
         $jabatans = Jabatan::all();
         
         return view('admin.manual-absensi.bulk-create', compact('users', 'jabatans'));
@@ -379,7 +404,7 @@ class ManualAbsensiController extends Controller
 
     public function importTemplate()
     {
-        $users = User::where('role', 'user')->where('status', 'aktif')->with('jabatan')->get();
+        $users = $this->sortUsersByExcelOrder(User::where('role', 'user')->where('status', 'aktif')->with('jabatan')->get());
         
         return view('admin.manual-absensi.import', compact('users'));
     }

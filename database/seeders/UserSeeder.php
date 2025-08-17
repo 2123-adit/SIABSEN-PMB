@@ -17,14 +17,16 @@ class UserSeeder extends Seeder
         $adminPassword = 'Admin@PMB2025!'; // CHANGE THIS IN PRODUCTION!
         
         User::create([
-            'username' => 'admin',
-            'name' => 'Admin PMB',
+            'user_id' => 'ADMIN',
+            'name' => 'ADMINISTRATOR',
             'password' => Hash::make($adminPassword),
             'jabatan_id' => 1, // Administrator
             'status' => 'aktif',
             'role' => 'admin',
             'jam_masuk' => '07:30:00',
-            'jam_pulang' => '16:30:00'
+            'jam_pulang' => '16:30:00',
+            'password_changed' => true, // Admin sudah menggunakan password kuat
+            'password_changed_at' => now()
         ]);
         
         Log::info("Admin created with password: {$adminPassword}");
@@ -82,17 +84,17 @@ class UserSeeder extends Seeder
 
         $generatedPasswords = [];
 
-        foreach ($karyawanData as $data) {
+        foreach ($karyawanData as $index => $data) {
             // Cari jabatan_id berdasarkan nama jabatan
             $jabatan = Jabatan::where('nama_jabatan', $data['jabatan'])->first();
             
             if ($jabatan) {
-                // Generate username dari nama
-                $username = strtolower(str_replace(' ', '.', $data['nama']));
-                $username = preg_replace('/[^a-z0-9.]/', '', $username);
+                // Generate user_id dengan format PMB + 3 digit nomor urut
+                $employeeNumber = str_pad($index + 1, 3, '0', STR_PAD_LEFT);
+                $user_id = 'PMB' . $employeeNumber; // PMB001, PMB002, dst
                 
-                // Generate strong password
-                $password = $this->generateStrongPassword();
+                // Password default = user_id
+                $password = $user_id;
 
                 // Handle jam pulang untuk shift malam (misal 04:00 = 28:00 hari sebelumnya)
                 $jamPulang = $data['jam_pulang'];
@@ -104,31 +106,33 @@ class UserSeeder extends Seeder
                 }
 
                 User::create([
-                    'username' => $username,
+                    'user_id' => $user_id,
                     'name' => $data['nama'],
                     'password' => Hash::make($password),
                     'jabatan_id' => $jabatan->id,
                     'status' => 'aktif',
                     'role' => 'user',
                     'jam_masuk' => $data['jam_masuk'] . ':00',
-                    'jam_pulang' => $data['jam_pulang'] . ':00'
+                    'jam_pulang' => $data['jam_pulang'] . ':00',
+                    'password_changed' => false, // Belum ganti password
+                    'password_changed_at' => null
                 ]);
 
                 $generatedPasswords[] = [
-                    'username' => $username,
+                    'user_id' => $user_id,
                     'name' => $data['nama'],
                     'password' => $password
                 ];
             }
         }
         
-        // Save passwords to file for distribution (pastikan file ini aman dan hanya diakses oleh yang berwenang)
+        // Save user credentials to file for distribution
         file_put_contents(
-            storage_path('app/generated_passwords.json'), 
+            storage_path('app/default_passwords.json'), 
             json_encode($generatedPasswords, JSON_PRETTY_PRINT)
         );
         
-        Log::info("Generated passwords saved to storage/app/generated_passwords.json");
+        Log::info("Default passwords (user_id = password) saved to storage/app/default_passwords.json");
     }
     
     private function generateStrongPassword(): string
