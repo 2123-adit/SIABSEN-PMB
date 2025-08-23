@@ -1,5 +1,5 @@
 <?php
-// app/Services/AbsensiService.php - UPDATED with Geofencing
+// app/Services/AbsensiService.php - UPDATED with Geofencing + Fix Cast Integer
 
 namespace App\Services;
 
@@ -20,7 +20,7 @@ class AbsensiService
             $user->load('jabatan');
         }
         
-        // Set timezone ke Asia/Jakarta (sama dengan Medan)
+        // Set timezone ke Asia/Jakarta
         $today = Carbon::today('Asia/Jakarta');
         $now = Carbon::now('Asia/Jakarta');
 
@@ -67,7 +67,7 @@ class AbsensiService
         }
         
         if ($debugBypass && !$geofenceResult['is_within']) {
-            \Log::info('🔓 DEBUG: Geofence validation bypassed for absen masuk', [
+            \Log::info('🛑 DEBUG: Geofence validation bypassed for absen masuk', [
                 'user_id' => $user->id,
                 'distance' => $geofenceResult['distance'],
                 'radius' => $geofenceResult['radius'],
@@ -77,11 +77,15 @@ class AbsensiService
         // Upload foto
         $fotoPath = $foto->store('absensi/masuk/' . $today->format('Y/m'), 'public');
 
-        // Hitung status keterlambatan dengan timezone Asia/Jakarta
+        // Hitung status keterlambatan
         $jamMasuk = $now;
         $jamKerjaMulai = Carbon::parse($user->jam_masuk)->setTimezone('Asia/Jakarta');
         $jamKerjaMulai->setDate($today->year, $today->month, $today->day);
-        $toleransi = $user->jabatan->toleransi_terlambat ?? 15;
+
+        // ✅ Fix: pastikan toleransi selalu integer
+        $toleransi = is_numeric($user->jabatan->toleransi_terlambat ?? null)
+            ? (int) $user->jabatan->toleransi_terlambat
+            : 15;
 
         $statusMasuk = 'tepat_waktu';
         $menitTerlambat = 0;
@@ -125,7 +129,6 @@ class AbsensiService
             'status_masuk' => $statusMasuk,
             'menit_terlambat' => $menitTerlambat,
             'foto_url' => asset('storage/' . $fotoPath),
-            // 'google_maps' => "https://www.google.com/maps?q={$latitude},{$longitude}", // REMOVED: Privacy concern
             'geofence_status' => $geofenceResult['is_within'] ? 'Dalam Area' : 'Luar Area',
             'distance_from_office' => $geofenceResult['distance'],
             'server_time' => $now->format('Y-m-d H:i:s T'),
@@ -144,7 +147,7 @@ class AbsensiService
             throw new \Exception('Tidak dapat absen pada hari libur');
         }
 
-        // Validasi jadwal kerja berdasarkan jabatan
+        // Validasi jadwal kerja
         if (!$user->jabatan->isWorkingDay($today)) {
             $dayName = $today->locale('id')->dayName;
             throw new \Exception("Tidak dapat absen. Hari {$dayName} bukan jadwal kerja untuk jabatan Anda");
@@ -165,8 +168,6 @@ class AbsensiService
 
         // Validasi Geofencing
         $geofenceResult = $this->validateGeofencing($latitude, $longitude);
-        
-        // Debug bypass untuk development
         $debugBypass = config('app.debug') && (env('GEOFENCE_DEBUG_BYPASS', false) || env('APP_ENV') === 'local');
         
         \Log::info('=== ABSEN PULANG: GEOFENCE VALIDATION ===', [
@@ -182,9 +183,9 @@ class AbsensiService
                 "Anda berada di luar area kantor. Jarak: {$geofenceResult['distance']}m dari {$geofenceResult['location_name']} (Max: {$geofenceResult['radius']}m)"
             );
         }
-        
+
         if ($debugBypass && !$geofenceResult['is_within']) {
-            \Log::info('🔓 DEBUG: Geofence validation bypassed for absen pulang', [
+            \Log::info('🛑 DEBUG: Geofence validation bypassed for absen pulang', [
                 'user_id' => $user->id,
                 'distance' => $geofenceResult['distance'],
                 'radius' => $geofenceResult['radius'],
@@ -194,7 +195,7 @@ class AbsensiService
         // Upload foto
         $fotoPath = $foto->store('absensi/pulang/' . $today->format('Y/m'), 'public');
 
-        // Hitung status pulang dengan timezone Asia/Jakarta
+        // Hitung status pulang
         $jamPulang = $now;
         $jamKerjaBerakhir = Carbon::parse($user->jam_pulang)->setTimezone('Asia/Jakarta');
         $jamKerjaBerakhir->setDate($today->year, $today->month, $today->day);
@@ -219,7 +220,6 @@ class AbsensiService
             'jam_pulang' => $jamPulang->format('H:i:s'),
             'status_pulang' => $statusPulang,
             'foto_url' => asset('storage/' . $fotoPath),
-            // 'google_maps' => "https://www.google.com/maps?q={$latitude},{$longitude}", // REMOVED: Privacy concern
             'total_jam_kerja' => $absensiHariIni->total_jam_kerja,
             'geofence_status' => $geofenceResult['is_within'] ? 'Dalam Area' : 'Luar Area',
             'distance_from_office' => $geofenceResult['distance'],
@@ -233,7 +233,6 @@ class AbsensiService
         $geofenceSetting = GeofencingSetting::getActiveSetting();
         
         if (!$geofenceSetting) {
-            // Jika tidak ada setting geofencing, izinkan absen dari mana saja
             return [
                 'is_within' => true,
                 'distance' => 0,

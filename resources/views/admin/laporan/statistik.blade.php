@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Statistik Kehadiran - SIABSEN PMB')
+@section('title', 'Statistik Kehadiran - ADMA Absensi Kantor')
 @section('page-title', 'Statistik Kehadiran')
 
 @push('styles')

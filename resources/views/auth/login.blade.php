@@ -4,14 +4,30 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Login - SIABSEN PMB</title>
+    <title>Login - ADMA Absensi Kantor</title>
+    
+    <!-- Favicon - Temporary Base64 for testing -->
+    <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAAdgAAAHYBTnsmCAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAANUSURBVFiFtZdLiFxVFIa/c2/dqq7X9KQzk4lJJhEyGhQVFVQQwYUgCIKCG1cuBBeCuHLjRnDlzoU7wYWCKwiCCxcuFBQUFYwGH2hQE4ckk5nJdLq7uqvq3nvOcVFdXV3dXZ1JfzBwOef8/3fO/Z//nCuqyv9ZxP8A4Ha7Tc/z3hSRN0WkALSASVX9UlW/2Nvb+6Rer4+JyAURaY/dBRGpqurfqvq1iHyoqgdUdUtE1lR1U0S2RWRdRPZU9aCq7qrqnoi0ROSgiOyLyI6ItEVkX0R2VXVPVTsi0lLVgxE5KCIHVHVXVQ+p6qGqHlLVjojs/w8AAAD//6q6p6p7qrqnqgdU9aCqtlR1X1Vbqrqvql1V3VPVrqp2VLVTX1+fFpEtEWmJyI6qtkVkR0S2RaQlIi0RaYvIloi0VLUlIm0R2VHVbRHZVtWtsbGxm0RkXVVXVXVNVddUdU1V11V1Q1U3RWRTVTdVdVNVN0VkS1U3RWRTVTdUdV1V11R1TVXXRGRdVddUdU1V11V1Q1U3RGRDVddVdU1V11V1Q1XXVXVdVTdUdUNVN0RkQ1U3RGRDVTdUdUNVN1R1Q1XXVXVdVddVdU1V11R1TVXXRGRdVddUdU1V11V1Q1XXVXVdVTdUdUNVN0RkQ1U3RGRDVTdUdUNVN1R1Q1XXVXVdVddVdU1V11R1TVXXRGRdVddUdU1V11V1Q1XXVXVdVTdUdUNVN0RkQ1U3RGRDVTdUdUNVN1R1Q1XXVXVdVddVdU1V11R1TVXXRGRdVddUdU1V11V1Q1XXVXVdVTdUdUNVN0RkQ1U3RGRDVTdUdUNVN1R1Q1XXVXVdVddVdU1V11R1TVXXRGRdVddUdU1V11V1Q1XXVXVdVTdUdUNVN0RkQ1U3RGRDVTdUdUNVN1R1Q1XXVXVdVddVdU1V11R1TVXXRGRdVddUdU1V11V1Q1XXVXVdVTdUdUNVN0RkQ1U3RGRDVTdUdUNVN1R1Q1XXVXVdVddVdU1V11R1TVXXRGRdVddUdU1V11V1Q1XXVXVdVTdUdUNVN0RkQ1U3RGRDVTdUdUNVN1R1Q1XXVXVdVddVdU1V11R1TVXXRGRdVddUdU1V11V1Q1XXVXVdVTdUdUNVN0RkQ1U3RGRDVTdUdUNVN1R1Q1XXVXVdVddVdU1V11R1TVXXRGRdVddUdU1V11V1Q1XXVXVdVTdUdUNVN0RkQ1U3RGRDVTdUdUNVN1R1Q1XXVXVdVddVdU1V11R1TVXXRGRdVddUdU1V11V1Q1XXVXVdVTdUdUNVN0RkQ1U3RGRDVTdUdUNVN1R1Q1XXVXVdVddVdU1V11R1TVXXRGRdVddUdU1V11V1Q1XXVXVdVTdUdUNVN0RkQ1U3RGRDVTdUdUNVN1R1Q1XXVXVdVddVdU1V11R1TVXXRGRdVddUdU1V11V1Q1XXVXVdVTdUdUNVN0RkQ1U3RGRDVTdUdUNVN1R1Q1XXVXVdVddVdU1V11R1TVXXRGRdVddUdU1V11V1Q1XXVXVdVTdUdUNVN0RkQ1U3RGRDVTdUdUNVN1R1Q1XXVXVdVddVdU1V11R1TVXXRGRdVddUdU1V11V1Q1XXVXVdVTdUdUNVN0RkQ1U3RGRDVTdUdUNVN1R1Q1XXVXVdVddVdU1V11R1TVXXRGRdVddUdU1V11V1Q1XXVXVdVTdUdUNVN0RkQ1U3RGRDVTdUdUNVN1R1Q1XXVXVdVddVdU1V11R1TVXXRGRdVddUdU1V11V1Q1XXVXVdVTdUdUNVN0RkQ1U3RGRDVTdUdUNVN1R1Q1XXVXVdVddVdU1V11R1TVXXRGRdVddUdU1V11V1Q1XXVXVdVTdUdUNVN0RkQ1U3RGRDVTdUdUNVN/8AAP//">
+    <!-- Fallback favicon links -->
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon-16x16.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('apple-touch-icon.png') }}">
 
+    <!-- Google Fonts - Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
 
     <style>
+        /* Inter Font Global */
+        body, .login-card, .form-control, .btn, h1, h2, h3, h4, h5, h6, p, span, div, a, label {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+        }
         body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
@@ -92,9 +108,9 @@
                     <div class="login-header">
                         <h3 class="mb-0">
                             <i class="bi bi-shield-lock me-2"></i>
-                            SIABSEN PMB
+                            ADMA
                         </h3>
-                        <p class="mb-0 mt-2 opacity-75">Admin Panel Login</p>
+                        <p class="mb-0 mt-2 opacity-75">Absensi Kantor - Admin Panel</p>
                     </div>
 
                     <div class="login-body">
@@ -151,7 +167,7 @@
 
                         <div class="text-center mt-4">
                             <small class="text-muted">
-                                Sistem Informasi Absensi PMB<br>
+                                ADMA - Absensi Kantor<br>
                                 &copy; {{ date('Y') }} All rights reserved
                             </small>
                         </div>

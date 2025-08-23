@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Hari Libur - SIABSEN PMB')
+@section('title', 'Hari Libur - ADMA Absensi Kantor')
 @section('page-title', 'Manajemen Hari Libur')
 
 @section('content')

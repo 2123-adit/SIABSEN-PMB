@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Pengaturan Geofencing - SIABSEN PMB')
+@section('title', 'Pengaturan Geofencing - ADMA Absensi Kantor')
 @section('page-title', 'Pengaturan Geofencing')
 
 @push('styles')

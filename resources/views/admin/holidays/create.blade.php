@@ -3,7 +3,7 @@
 ?>
 @extends('layouts.admin')
 
-@section('title', 'Tambah Hari Libur - SIABSEN PMB')
+@section('title', 'Tambah Hari Libur - ADMA Absensi Kantor')
 @section('page-title', 'Tambah Hari Libur')
 
 @section('content')

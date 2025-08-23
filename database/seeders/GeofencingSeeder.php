@@ -11,21 +11,21 @@ class GeofencingSeeder extends Seeder
     {
         // Default Geofencing Setting untuk Medan
         GeofencingSetting::create([
-            'nama_lokasi' => 'Kantor PMB Medan',
-            'latitude' => 3.600348, // Koordinat Medan, North Sumatra
-            'longitude' => 98.7178027,
+            'nama_lokasi' => 'Kantor ADMA Medan',
+            'latitude' => 3.600796, // Koordinat Medan, North Sumatra
+            'longitude' => 98.7180435,
             'radius_meter' => 100, // 100 meter radius
-            'deskripsi' => 'Area geofencing default untuk kantor PMB di Medan',
+            'deskripsi' => 'Area geofencing default untuk kantor ADMA di Medan',
             'is_active' => true
         ]);
 
         // Backup location (nonaktif)
         GeofencingSetting::create([
-            'nama_lokasi' => 'Kantor Cabang PMB',
+            'nama_lokasi' => 'Kantor Cabang ADMA',
             'latitude' => 3.5850,
             'longitude' => 98.6750,
             'radius_meter' => 150,
-            'deskripsi' => 'Area geofencing untuk kantor cabang PMB',
+            'deskripsi' => 'Area geofencing untuk kantor cabang ADMA',
             'is_active' => false
         ]);
     }

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generate Simple Favicon</title>
+</head>
+<body>
+    <canvas id="canvas" width="32" height="32" style="border: 1px solid #000; image-rendering: pixelated; width: 128px; height: 128px;"></canvas>
+    <br><br>
+    <button onclick="generateFavicon()">Generate ADMA Favicon</button>
+    <button onclick="downloadFavicon()">Download as PNG</button>
+    
+    <script>
+        function generateFavicon() {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, 32, 32);
+            
+            // Create gradient background
+            const gradient = ctx.createLinearGradient(0, 0, 32, 32);
+            gradient.addColorStop(0, '#667eea');
+            gradient.addColorStop(1, '#764ba2');
+            
+            // Fill background
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 32, 32);
+            
+            // Draw letter A
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 20px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('A', 16, 16);
+        }
+        
+        function downloadFavicon() {
+            const canvas = document.getElementById('canvas');
+            const link = document.createElement('a');
+            link.download = 'favicon-32x32.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+        
+        // Generate on page load
+        generateFavicon();
+    </script>
+</body>
+</html>

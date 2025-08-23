@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Calendar Absensi - SIABSEN PMB')
+@section('title', 'Calendar Absensi - ADMA Absensi Kantor')
 @section('page-title', 'Calendar Absensi')
 
 @push('styles')

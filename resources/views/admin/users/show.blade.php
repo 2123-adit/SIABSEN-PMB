@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Detail User - SIABSEN PMB')
+@section('title', 'Detail User - ADMA Absensi Kantor')
 @section('page-title', 'Detail User')
 
 @section('content')

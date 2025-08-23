@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Tambah Geofencing - SIABSEN PMB')
+@section('title', 'Tambah Geofencing - ADMA Absensi Kantor')
 @section('page-title', 'Tambah Pengaturan Geofencing')
 
 @push('styles')
@@ -55,8 +55,8 @@
                             <div class="mb-3">
                                 <label class="form-label">Nama Lokasi <span class="text-danger">*</span></label>
                                 <input type="text" name="nama_lokasi" class="form-control @error('nama_lokasi') is-invalid @enderror" 
-                                       value="{{ old('nama_lokasi', 'Kantor PMB Medan') }}" 
-                                       placeholder="Contoh: Kantor PMB Medan" required>
+                                       value="{{ old('nama_lokasi', 'Kantor ADMA Medan') }}" 
+                                       placeholder="Contoh: Kantor ADMA Medan" required>
                                 @error('nama_lokasi')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror

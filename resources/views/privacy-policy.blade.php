@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kebijakan Privasi - Aplikasi Absensi Pegawai PMB</title>
+    <title>Kebijakan Privasi - ADMA Absensi Kantor</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -72,7 +72,7 @@
         </div>
 
         <div class="important">
-            <strong>⚠️ PENTING:</strong> Kebijakan privasi ini berlaku untuk aplikasi mobile "Absensi PMB" yang digunakan untuk sistem absensi karyawan. Dengan menggunakan aplikasi ini, Anda menyetujui pengumpulan dan penggunaan informasi sesuai dengan kebijakan ini.
+            <strong>⚠️ PENTING:</strong> Kebijakan privasi ini berlaku untuk aplikasi mobile "ADMA Absensi Kantor" yang digunakan untuk sistem absensi karyawan. Dengan menggunakan aplikasi ini, Anda menyetujui pengumpulan dan penggunaan informasi sesuai dengan kebijakan ini.
         </div>
 
         <div class="section">
@@ -179,7 +179,7 @@
             <p>Jika Anda memiliki pertanyaan, keluhan, atau permintaan terkait kebijakan privasi ini, silakan hubungi:</p>
             
             <div style="margin: 20px 0;">
-                <strong>📧 Email:</strong> admin@pmb.co.id<br>
+                <strong>📧 Email:</strong> admin@adma.co.id<br>
                 <strong>📱 WhatsApp:</strong> +62 812-3456-7890<br>
                 <strong>🏢 Alamat Kantor:</strong> Jl. Contoh No. 123, Medan, Sumatera Utara<br>
                 <strong>⏰ Jam Operasional:</strong> Senin - Jumat, 08:00 - 17:00 WIB
@@ -189,8 +189,8 @@
         </div>
 
         <div style="margin-top: 40px; padding-top: 20px; border-top: 2px solid #dee2e6; text-align: center; color: #6c757d;">
-            <p><strong>SISTEM INFORMASI ABSENSI PMB</strong></p>
-            <p>© {{ date('Y') }} PT. PMB Indonesia. Semua hak dilindungi.</p>
+            <p><strong>ADMA ABSENSI KANTOR</strong></p>
+            <p>© {{ date('Y') }} PT. ADMA Indonesia. Semua hak dilindungi.</p>
             <p><em>Dokumen ini dibuat untuk memenuhi standar privasi Google Play Store dan peraturan perlindungan data.</em></p>
         </div>
     </div>

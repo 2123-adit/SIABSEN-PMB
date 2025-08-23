@@ -39,6 +39,7 @@ class ManualAbsensiController extends Controller
             return $position !== false ? $position : 999;
         })->values();
     }
+
     public function index(Request $request)
     {
         $query = Absensi::with(['user', 'user.jabatan']);
@@ -115,10 +116,10 @@ class ManualAbsensiController extends Controller
             'status_kehadiran' => $request->status_kehadiran,
             'keterangan' => $request->keterangan,
             'menit_terlambat' => 0,
-            'source' => 'manual' // FIXED: Set source as manual
+            'source' => 'manual'
         ];
 
-        // FIXED: Handle jam masuk dengan proper datetime
+        // FIXED: Handle jam masuk dengan proper datetime dan type casting
         if ($request->filled('jam_masuk') && $request->status_kehadiran == 'hadir') {
             // Parse jam masuk
             $jamMasukParts = explode(':', $request->jam_masuk);
@@ -129,7 +130,8 @@ class ManualAbsensiController extends Controller
             $jamKerjaMulai = $tanggal->copy()
                 ->setTime($user->jam_masuk->hour, $user->jam_masuk->minute, 0);
                 
-            $toleransi = $user->jabatan->toleransi_terlambat ?? 15;
+            // FIXED: Cast toleransi to integer to prevent Carbon error
+            $toleransi = (int)($user->jabatan->toleransi_terlambat ?? 15);
 
             $data['jam_masuk'] = $jamMasukDateTime->format('H:i:s');
             
@@ -239,10 +241,10 @@ class ManualAbsensiController extends Controller
             'jam_pulang' => null,
             'status_masuk' => null,
             'status_pulang' => null,
-            'source' => $absensi->source ?? 'manual' // Maintain existing source
+            'source' => $absensi->source ?? 'manual'
         ];
 
-        // FIXED: Handle jam masuk dengan proper datetime (same as store method)
+        // FIXED: Handle jam masuk dengan proper datetime dan type casting
         if ($request->filled('jam_masuk') && $request->status_kehadiran == 'hadir') {
             $jamMasukParts = explode(':', $request->jam_masuk);
             $jamMasukDateTime = $tanggal->copy()
@@ -251,7 +253,8 @@ class ManualAbsensiController extends Controller
             $jamKerjaMulai = $tanggal->copy()
                 ->setTime($user->jam_masuk->hour, $user->jam_masuk->minute, 0);
                 
-            $toleransi = $user->jabatan->toleransi_terlambat ?? 15;
+            // FIXED: Cast toleransi to integer to prevent Carbon error
+            $toleransi = (int)($user->jabatan->toleransi_terlambat ?? 15);
 
             $data['jam_masuk'] = $jamMasukDateTime->format('H:i:s');
             
@@ -263,7 +266,7 @@ class ManualAbsensiController extends Controller
             }
         }
 
-        // FIXED: Handle jam pulang dengan proper datetime (same as store method)
+        // FIXED: Handle jam pulang dengan proper datetime
         if ($request->filled('jam_pulang') && $request->status_kehadiran == 'hadir') {
             $jamPulangParts = explode(':', $request->jam_pulang);
             $jamPulangDateTime = $tanggal->copy()
@@ -379,15 +382,21 @@ class ManualAbsensiController extends Controller
                 'is_within_geofence_pulang' => true,
                 'distance_from_office_masuk' => 0,
                 'distance_from_office_pulang' => 0,
-                'source' => 'bulk' // FIXED: Set source as bulk
+                'source' => 'bulk'
             ];
 
-            // FIXED: For bulk hadir, add default working hours
+            // FIXED: For bulk hadir, add default working hours with null check
             if ($request->status_kehadiran == 'hadir') {
-                $data['jam_masuk'] = $user->jam_masuk->format('H:i:s');
-                $data['jam_pulang'] = $user->jam_pulang->format('H:i:s');
-                $data['status_masuk'] = 'tepat_waktu';
-                $data['status_pulang'] = 'tepat_waktu';
+                // FIXED: Add null checks for jam_masuk and jam_pulang
+                if ($user->jam_masuk) {
+                    $data['jam_masuk'] = $user->jam_masuk->format('H:i:s');
+                    $data['status_masuk'] = 'tepat_waktu';
+                }
+                
+                if ($user->jam_pulang) {
+                    $data['jam_pulang'] = $user->jam_pulang->format('H:i:s');
+                    $data['status_pulang'] = 'tepat_waktu';
+                }
             }
 
             Absensi::create($data);

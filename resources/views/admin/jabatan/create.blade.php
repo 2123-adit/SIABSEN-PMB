@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Tambah Jabatan - SIABSEN PMB')
+@section('title', 'Tambah Jabatan - ADMA Absensi Kantor')
 @section('page-title', 'Tambah Jabatan Baru')
 
 @push('styles')

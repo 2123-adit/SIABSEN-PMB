@@ -14,7 +14,7 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         // ADMIN USER - STRONG PASSWORD
-        $adminPassword = 'Admin@PMB2025!'; // CHANGE THIS IN PRODUCTION!
+        $adminPassword = 'Admin@ADMA2025!'; // CHANGE THIS IN PRODUCTION!
         
         User::create([
             'user_id' => 'ADMIN',
@@ -31,7 +31,7 @@ class UserSeeder extends Seeder
         
         Log::info("Admin created with password: {$adminPassword}");
 
-        // Data karyawan dari Excel dengan PASSWORD KUAT
+        // Data karyawan dari Excel SPPG YKB Polrestabes Medan
         $karyawanData = [
             ['nama' => 'ELVA ROITA SINAGA', 'jabatan' => 'ASISTEN LAPANGAN', 'jam_masuk' => '08:00', 'jam_pulang' => '17:00'],
             ['nama' => 'RIA KURNIA SARI', 'jabatan' => 'TIM PERSIAPAN', 'jam_masuk' => '19:00', 'jam_pulang' => '04:00'],
@@ -43,67 +43,73 @@ class UserSeeder extends Seeder
             ['nama' => 'SUKASMI', 'jabatan' => 'TIM PENGOLAHAN', 'jam_masuk' => '11:00', 'jam_pulang' => '08:00'],
             ['nama' => 'JANTY SULAEMAN', 'jabatan' => 'TIM PENGOLAHAN', 'jam_masuk' => '11:00', 'jam_pulang' => '08:00'],
             ['nama' => 'RICKY HIDAYAT', 'jabatan' => 'TIM PENGOLAHAN', 'jam_masuk' => '11:00', 'jam_pulang' => '08:00'],
-            ['nama' => 'MUHAMAD YUSUF', 'jabatan' => 'TIM PENGOLAHAN', 'jam_masuk' => '11:00', 'jam_pulang' => '08:00'],
-            ['nama' => 'SYAIFUL BAHRI', 'jabatan' => 'TIM PENGOLAHAN', 'jam_masuk' => '11:00', 'jam_pulang' => '08:00'],
-            ['nama' => 'TUTI MEGAWATI', 'jabatan' => 'TIM PENGOLAHAN', 'jam_masuk' => '11:00', 'jam_pulang' => '08:00'],
-            ['nama' => 'DEFI SAPUTRI', 'jabatan' => 'TIM PENGOLAHAN', 'jam_masuk' => '11:00', 'jam_pulang' => '08:00'],
-            ['nama' => 'NOVI YANTI', 'jabatan' => 'TIM PENGOLAHAN', 'jam_masuk' => '11:00', 'jam_pulang' => '08:00'],
-            ['nama' => 'DESY WAHYUNI', 'jabatan' => 'TIM PENGOLAHAN', 'jam_masuk' => '11:00', 'jam_pulang' => '08:00'],
-            ['nama' => 'PUTRI MAHYUNI', 'jabatan' => 'TIM PENGOLAHAN', 'jam_masuk' => '11:00', 'jam_pulang' => '08:00'],
-            ['nama' => 'MELDA SAFITRI', 'jabatan' => 'TIM PENGOLAHAN', 'jam_masuk' => '11:00', 'jam_pulang' => '08:00'],
-            ['nama' => 'DEWI SARTIKA', 'jabatan' => 'TIM PENGOLAHAN', 'jam_masuk' => '11:00', 'jam_pulang' => '08:00'],
-            ['nama' => 'SISKA REVIANA', 'jabatan' => 'TIM PENGOLAHAN', 'jam_masuk' => '11:00', 'jam_pulang' => '08:00'],
-            ['nama' => 'DIAN SAFITRI', 'jabatan' => 'TIM PENGOLAHAN', 'jam_masuk' => '11:00', 'jam_pulang' => '08:00'],
-            ['nama' => 'SARI INDAH SISKA', 'jabatan' => 'TIM PENGOLAHAN', 'jam_masuk' => '11:00', 'jam_pulang' => '08:00'],
-            ['nama' => 'WINDY CHAIRANI', 'jabatan' => 'TIM PENGOLAHAN', 'jam_masuk' => '11:00', 'jam_pulang' => '08:00'],
-            ['nama' => 'ROHANI', 'jabatan' => 'TIM PEMORSIAN', 'jam_masuk' => '11:00', 'jam_pulang' => '08:00'],
-            ['nama' => 'NURPIATI', 'jabatan' => 'TIM PEMORSIAN', 'jam_masuk' => '11:00', 'jam_pulang' => '08:00'],
-            ['nama' => 'ROSMAINI', 'jabatan' => 'TIM PEMORSIAN', 'jam_masuk' => '11:00', 'jam_pulang' => '08:00'],
-            ['nama' => 'NURMALA', 'jabatan' => 'TIM PEMORSIAN', 'jam_masuk' => '11:00', 'jam_pulang' => '08:00'],
-            ['nama' => 'RINI HAYATI', 'jabatan' => 'TIM PEMORSIAN', 'jam_masuk' => '11:00', 'jam_pulang' => '08:00'],
-            ['nama' => 'SITI AMINAH', 'jabatan' => 'TIM PEMORSIAN', 'jam_masuk' => '11:00', 'jam_pulang' => '08:00'],
-            ['nama' => 'LILIS SRIWAHYUNI', 'jabatan' => 'TIM PEMORSIAN', 'jam_masuk' => '11:00', 'jam_pulang' => '08:00'],
-            ['nama' => 'SURAHMAN', 'jabatan' => 'TIMPENGEMASAN', 'jam_masuk' => '11:00', 'jam_pulang' => '08:00'],
-            ['nama' => 'ANDIKA', 'jabatan' => 'TIMPENGEMASAN', 'jam_masuk' => '11:00', 'jam_pulang' => '08:00'],
-            ['nama' => 'FAUZI SIREGAR', 'jabatan' => 'TIMPENGEMASAN', 'jam_masuk' => '11:00', 'jam_pulang' => '08:00'],
-            ['nama' => 'DEDI KURNIAWAN', 'jabatan' => 'TIMPENGEMASAN', 'jam_masuk' => '11:00', 'jam_pulang' => '08:00'],
-            ['nama' => 'ILHAM', 'jabatan' => 'TIM DRIVER', 'jam_masuk' => '11:00', 'jam_pulang' => '08:00'],
-            ['nama' => 'HUSEIN', 'jabatan' => 'TIM DRIVER', 'jam_masuk' => '11:00', 'jam_pulang' => '08:00'],
-            ['nama' => 'SAMSUL BAHRI', 'jabatan' => 'TIM DRIVER', 'jam_masuk' => '11:00', 'jam_pulang' => '08:00'],
-            ['nama' => 'DEDI SAPUTRA', 'jabatan' => 'TIM DRIVER', 'jam_masuk' => '11:00', 'jam_pulang' => '08:00'],
-            ['nama' => 'IRFAN', 'jabatan' => 'TIM DRIVER', 'jam_masuk' => '11:00', 'jam_pulang' => '08:00'],
-            ['nama' => 'RIAN', 'jabatan' => 'TIM DRIVER', 'jam_masuk' => '11:00', 'jam_pulang' => '08:00'],
-            ['nama' => 'SARI DAMAYANTI', 'jabatan' => 'TIM PENCUCIAN ALAT MAKAN', 'jam_masuk' => '08:00', 'jam_pulang' => '17:00'],
-            ['nama' => 'SISKA MAHARANI', 'jabatan' => 'TIM PENCUCIAN ALAT MAKAN', 'jam_masuk' => '08:00', 'jam_pulang' => '17:00'],
-            ['nama' => 'INTAN SARI', 'jabatan' => 'TIM PENCUCIAN ALAT MAKAN', 'jam_masuk' => '08:00', 'jam_pulang' => '17:00'],
-            ['nama' => 'SRI RAHAYU', 'jabatan' => 'TIM KEBERSIHAN', 'jam_masuk' => '06:00', 'jam_pulang' => '15:00'],
-            ['nama' => 'FITRI APRIYANI', 'jabatan' => 'TIM KEBERSIHAN', 'jam_masuk' => '06:00', 'jam_pulang' => '15:00'],
-            ['nama' => 'ARMEN', 'jabatan' => 'TIM KEMANAN', 'jam_masuk' => '18:00', 'jam_pulang' => '06:00'],
-            ['nama' => 'AHMAD YANI', 'jabatan' => 'TIM KEMANAN', 'jam_masuk' => '18:00', 'jam_pulang' => '06:00']
+            ['nama' => 'ERFIANNI NASUTION', 'jabatan' => 'TIM PENGOLAHAN', 'jam_masuk' => '11:00', 'jam_pulang' => '08:00'],
+            ['nama' => 'LILIS SINURAT', 'jabatan' => 'TIM PENGOLAHAN', 'jam_masuk' => '11:00', 'jam_pulang' => '08:00'],
+            ['nama' => 'ELLY MANDAWATY', 'jabatan' => 'TIM PENGOLAHAN', 'jam_masuk' => '11:00', 'jam_pulang' => '08:00'],
+            ['nama' => 'VIVI WAHYUNI', 'jabatan' => 'TIM PENGOLAHAN', 'jam_masuk' => '11:00', 'jam_pulang' => '08:00'],
+            ['nama' => 'SRI WULANDARI LUBIS', 'jabatan' => 'TIM PENGOLAHAN', 'jam_masuk' => '11:00', 'jam_pulang' => '08:00'],
+            ['nama' => 'IDA ASI MANURUNG', 'jabatan' => 'TIM PEMORSIAN', 'jam_masuk' => '05:00', 'jam_pulang' => '14:00'],
+            ['nama' => 'DEBORA GRESIA SIAHAAN', 'jabatan' => 'TIM PEMORSIAN', 'jam_masuk' => '05:00', 'jam_pulang' => '14:00'],
+            ['nama' => 'YUNITA SIAHAAN', 'jabatan' => 'TIM PEMORSIAN', 'jam_masuk' => '05:00', 'jam_pulang' => '14:00'],
+            ['nama' => 'RISMA SITANGGANG', 'jabatan' => 'TIM PEMORSIAN', 'jam_masuk' => '05:00', 'jam_pulang' => '14:00'],
+            ['nama' => 'NURIATI BR SIHOMBING', 'jabatan' => 'TIM PEMORSIAN', 'jam_masuk' => '05:00', 'jam_pulang' => '14:00'],
+            ['nama' => 'DANNY HARIKSON SILALAHI', 'jabatan' => 'TIM PEMORSIAN', 'jam_masuk' => '05:00', 'jam_pulang' => '14:00'],
+            ['nama' => 'JULAAILA', 'jabatan' => 'TIM PEMORSIAN', 'jam_masuk' => '05:00', 'jam_pulang' => '14:00'],
+            ['nama' => 'HOTMAULI SIHOMBING', 'jabatan' => 'TIM PEMORSIAN', 'jam_masuk' => '05:00', 'jam_pulang' => '14:00'],
+            ['nama' => 'NORA PARDEDE', 'jabatan' => 'TIM PENGEMASAN', 'jam_masuk' => '05:00', 'jam_pulang' => '14:00'],
+            ['nama' => 'JENNY SIHOMBING', 'jabatan' => 'TIM PENGEMASAN', 'jam_masuk' => '05:00', 'jam_pulang' => '14:00'],
+            ['nama' => 'MUSLIM AR RAHMAN', 'jabatan' => 'TIM DRIVER', 'jam_masuk' => '07:00', 'jam_pulang' => '15:00'],
+            ['nama' => 'TIMBUL PARULIAN BATEE', 'jabatan' => 'TIM DRIVER', 'jam_masuk' => '07:00', 'jam_pulang' => '15:00'],
+            ['nama' => 'MARUDUT S.', 'jabatan' => 'TIM DRIVER', 'jam_masuk' => '07:00', 'jam_pulang' => '15:00'],
+            ['nama' => 'AMRAN', 'jabatan' => 'TIM DRIVER', 'jam_masuk' => '07:00', 'jam_pulang' => '15:00'],
+            ['nama' => 'ADE TUTY SOFYANI', 'jabatan' => 'TIM PENCUCIAN ALAT MAKAN', 'jam_masuk' => '13:00', 'jam_pulang' => '22:00'],
+            ['nama' => 'NURSINTA SIMATUPANG', 'jabatan' => 'TIM PENCUCIAN ALAT MAKAN', 'jam_masuk' => '13:00', 'jam_pulang' => '22:00'],
+            ['nama' => 'LENNY IMELDA MANURUNG', 'jabatan' => 'TIM PENCUCIAN ALAT MAKAN', 'jam_masuk' => '13:00', 'jam_pulang' => '22:00'],
+            ['nama' => 'HERNAWATI SIMANJUNTAK', 'jabatan' => 'TIM PENCUCIAN ALAT MAKAN', 'jam_masuk' => '13:00', 'jam_pulang' => '22:00'],
+            ['nama' => 'FITRI CRISTIANI', 'jabatan' => 'TIM PENCUCIAN ALAT MAKAN', 'jam_masuk' => '13:00', 'jam_pulang' => '22:00'],
+            ['nama' => 'NUR ELLY SIMATUPANG', 'jabatan' => 'TIM PENCUCIAN ALAT MAKAN', 'jam_masuk' => '13:00', 'jam_pulang' => '22:00'],
+            ['nama' => 'TIOMAS BR. SIHOMBING', 'jabatan' => 'TIM PENCUCIAN ALAT MAKAN', 'jam_masuk' => '13:00', 'jam_pulang' => '22:00'],
+            ['nama' => 'MISDIANA', 'jabatan' => 'TIM PENCUCIAN ALAT MAKAN', 'jam_masuk' => '13:00', 'jam_pulang' => '22:00'],
+            ['nama' => 'RINA ARIANI', 'jabatan' => 'TIM PENCUCIAN ALAT MAKAN', 'jam_masuk' => '13:00', 'jam_pulang' => '22:00'],
+            ['nama' => 'MIKA LAOWO', 'jabatan' => 'TIM PENCUCIAN ALAT MAKAN', 'jam_masuk' => '13:00', 'jam_pulang' => '22:00'],
+            ['nama' => 'NELLY SISKA TAMBUNAN', 'jabatan' => 'TIM PENCUCIAN ALAT MAKAN', 'jam_masuk' => '13:00', 'jam_pulang' => '22:00'],
+            ['nama' => 'RUFIDA BATUBARA', 'jabatan' => 'TIM PENCUCIAN ALAT MAKAN', 'jam_masuk' => '13:00', 'jam_pulang' => '22:00'],
+            ['nama' => 'ESTETI MAWATI', 'jabatan' => 'TIM PENCUCIAN ALAT MAKAN', 'jam_masuk' => '13:00', 'jam_pulang' => '22:00'],
+            ['nama' => 'MUHAMMAD ZIDANE', 'jabatan' => 'TIM PERSIAPAN', 'jam_masuk' => '19:00', 'jam_pulang' => '04:00'],
+            ['nama' => 'ALFA REZI', 'jabatan' => 'TIM KEBERSIHAN', 'jam_masuk' => '07:00', 'jam_pulang' => '16:00'],
+            ['nama' => 'JULIUS FRENGKY SINAGA', 'jabatan' => 'TIM PERSIAPAN', 'jam_masuk' => '19:00', 'jam_pulang' => '04:00'],
+            ['nama' => 'OSVALDO SITORUS', 'jabatan' => 'TIM KEAMANAN', 'jam_masuk' => '20:00', 'jam_pulang' => '08:00'],
+            ['nama' => 'JULIAN EKA SIHOMBING', 'jabatan' => 'TIM KEAMANAN', 'jam_masuk' => '08:00', 'jam_pulang' => '20:00']
         ];
 
         $generatedPasswords = [];
 
         foreach ($karyawanData as $index => $data) {
-            // Cari jabatan_id berdasarkan nama jabatan
-            $jabatan = Jabatan::where('nama_jabatan', $data['jabatan'])->first();
+            // Mapping jabatan yang ada di Excel ke jabatan yang ada di database
+            $jabatanMapping = [
+                'ASISTEN LAPANGAN' => 'ASISTEN LAPANGAN',
+                'TIM PERSIAPAN' => 'TIM PERSIAPAN',
+                'KEPALA KOKI' => 'KEPALA KOKI',
+                'TIM PENGOLAHAN' => 'TIM PENGOLAHAN',
+                'TIM PEMORSIAN' => 'TIM PEMORSIAN',
+                'TIM PENGEMASAN' => 'TIMPENGEMASAN',   // ✅ diubah
+                'TIM DRIVER' => 'TIM DRIVER',
+                'TIM PENCUCIAN ALAT MAKAN' => 'TIM PENCUCIAN ALAT MAKAN',
+                'TIM KEBERSIHAN' => 'TIM KEBERSIHAN',
+                'TIM KEAMANAN' => 'TIM KEMANAN'         // ✅ diubah
+            ];
+
+            // Cari jabatan_id berdasarkan mapping
+            $namaJabatanDB = $jabatanMapping[$data['jabatan']] ?? $data['jabatan'];
+            $jabatan = Jabatan::where('nama_jabatan', $namaJabatanDB)->first();
             
             if ($jabatan) {
-                // Generate user_id dengan format PMB + 3 digit nomor urut
+                // Generate user_id dengan format ADMA + 3 digit nomor urut
                 $employeeNumber = str_pad($index + 1, 3, '0', STR_PAD_LEFT);
-                $user_id = 'PMB' . $employeeNumber; // PMB001, PMB002, dst
+                $user_id = 'ADMA' . $employeeNumber; // ADMA001, ADMA002, dst
                 
                 // Password default = user_id
                 $password = $user_id;
-
-                // Handle jam pulang untuk shift malam (misal 04:00 = 28:00 hari sebelumnya)
-                $jamPulang = $data['jam_pulang'];
-                if ($data['jam_pulang'] === '04:00' || $data['jam_pulang'] === '08:00') {
-                    if (strtotime($data['jam_masuk']) > strtotime($data['jam_pulang'])) {
-                        // Shift malam, tambah 24 jam ke jam pulang untuk perhitungan
-                        $jamPulang = date('H:i', strtotime($data['jam_pulang']) + 24*3600);
-                    }
-                }
 
                 User::create([
                     'user_id' => $user_id,
@@ -121,8 +127,12 @@ class UserSeeder extends Seeder
                 $generatedPasswords[] = [
                     'user_id' => $user_id,
                     'name' => $data['nama'],
-                    'password' => $password
+                    'jabatan' => $data['jabatan'],
+                    'password' => $password,
+                    'jam_kerja' => $data['jam_masuk'] . ':00 - ' . $data['jam_pulang'] . ':00'
                 ];
+            } else {
+                Log::warning("Jabatan tidak ditemukan untuk: {$data['nama']} - {$data['jabatan']}");
             }
         }
         
@@ -132,7 +142,20 @@ class UserSeeder extends Seeder
             json_encode($generatedPasswords, JSON_PRETTY_PRINT)
         );
         
+        Log::info("Seeded " . count($generatedPasswords) . " employees from Excel data");
         Log::info("Default passwords (user_id = password) saved to storage/app/default_passwords.json");
+        
+        // Log summary by department
+        $departments = [];
+        foreach ($generatedPasswords as $emp) {
+            $dept = $emp['jabatan'];
+            $departments[$dept] = ($departments[$dept] ?? 0) + 1;
+        }
+        
+        Log::info("Employee distribution by department:");
+        foreach ($departments as $dept => $count) {
+            Log::info("- {$dept}: {$count} employees");
+        }
     }
     
     private function generateStrongPassword(): string

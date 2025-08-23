@@ -167,7 +167,7 @@
 <body>
     <div class="header">
         <h2>SLIP ABSENSI KARYAWAN</h2>
-        <div class="subtitle">SISTEM INFORMASI ABSENSI PMB</div>
+        <div class="subtitle">ADMA ABSENSI KANTOR</div>
         <div class="subtitle">Periode: {{ $periode }}</div>
     </div>
     
@@ -341,7 +341,7 @@
                 <td style="width: 200px;">
                     <div>{{ now()->locale('id')->translatedFormat('d F Y') }}</div>
                     <div style="margin: 10px 0;">Mengetahui,</div>
-                    <div style="margin: 10px 0; font-weight: bold;">Koordinator PMB</div>
+                    <div style="margin: 10px 0; font-weight: bold;">Koordinator ADMA</div>
                     <div class="sign-box"></div>
                     <div style="border-top: 1px solid #000; margin-top: 5px; padding-top: 5px;">
                         <strong>(.............................)</strong>
@@ -362,7 +362,7 @@
     </div>
 
     <div class="footer">
-        <p><strong>SISTEM INFORMASI ABSENSI PMB</strong></p>
+        <p><strong>ADMA ABSENSI KANTOR</strong></p>
         <p>Dokumen ini digenerate secara otomatis pada {{ now()->format('d/m/Y H:i:s') }}</p>
         <p><em>* Slip ini merupakan bukti resmi kehadiran karyawan untuk periode yang tertera</em></p>
     </div>

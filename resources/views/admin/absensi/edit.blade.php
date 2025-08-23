@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Edit Absensi - SIABSEN PMB')
+@section('title', 'Edit Absensi - ADMA Absensi Kantor')
 @section('page-title', 'Edit Data Absensi')
 
 @section('content')

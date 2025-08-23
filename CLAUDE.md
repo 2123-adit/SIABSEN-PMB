@@ -26,7 +26,7 @@ File ini memberikan panduan kepada Claude Code (claude.ai/code) saat bekerja den
 
 ## Arsitektur Sistem
 
-Ini adalah **sistem manajemen absensi berbasis Laravel (SIABSEN-PMB)** dengan dukungan API mobile dan fitur geofencing.
+Ini adalah **sistem manajemen absensi berbasis Laravel (ADMA Absensi Kantor)** dengan dukungan API mobile dan fitur geofencing.
 
 ### Komponen Utama
 
@@ -74,4 +74,4 @@ Ini adalah **sistem manajemen absensi berbasis Laravel (SIABSEN-PMB)** dengan du
 - Jadwal kerja didefinisikan pada level jabatan
 - Upload foto disimpan di `storage/app/public/absensi/` dengan struktur direktori terorganisir
 - Semua timestamp menggunakan timezone `Asia/Jakarta`
-- Default admin login: username sesuai dengan data di UserSeeder, password `Admin@PMB2025!`
+- Default admin login: username sesuai dengan data di UserSeeder, password `Admin@ADMA2025!`
