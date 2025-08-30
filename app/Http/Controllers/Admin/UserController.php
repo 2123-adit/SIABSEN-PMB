@@ -177,7 +177,7 @@ class UserController extends Controller
 
     public function resetPassword(User $user)
     {
-        $newPassword = 'password123';
+        $newPassword = $user->user_id; // Reset ke user_id sebagai password default
         $user->update([
             'password' => Hash::make($newPassword)
         ]);

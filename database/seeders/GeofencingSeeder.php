@@ -12,8 +12,8 @@ class GeofencingSeeder extends Seeder
         // Default Geofencing Setting untuk Medan
         GeofencingSetting::create([
             'nama_lokasi' => 'Kantor ADMA Medan',
-            'latitude' => 3.600796, // Koordinat Medan, North Sumatra
-            'longitude' => 98.7180435,
+            'latitude' => 3.60079600, // Koordinat Medan, North Sumatra
+            'longitude' => 98.71804350,
             'radius_meter' => 100, // 100 meter radius
             'deskripsi' => 'Area geofencing default untuk kantor ADMA di Medan',
             'is_active' => true
